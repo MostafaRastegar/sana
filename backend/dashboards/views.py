@@ -11,7 +11,7 @@ from .serializers import DashboardSerializer, DashboardRenderSerializer
 class DashboardViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Dashboard model.
-    Provides CRUD operations plus `layout` and `render` actions.
+    Provides CRUD operations plus `layout`, `filters`, and `render` actions.
     """
 
     queryset = Dashboard.objects.select_related("created_by").all()
@@ -57,10 +57,36 @@ class DashboardViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(dashboard)
         return Response(serializer.data)
 
+    @action(detail=True, methods=["put"])
+    def filters(self, request, pk=None):
+        """
+        Update just the global filters JSON for a dashboard.
+        """
+        dashboard = self.get_object()
+        new_filters = request.data.get("filters")
+
+        if new_filters is None:
+            raise DmvnException(
+                "Filters are required.", status_code=400, code="bad_request"
+            )
+
+        if not isinstance(new_filters, list):
+            raise DmvnException(
+                "Filters must be a JSON array.", status_code=400, code="bad_request"
+            )
+
+        dashboard.filters = new_filters
+        dashboard.save()
+
+        serializer = self.get_serializer(dashboard)
+        return Response(serializer.data)
+
     @action(detail=True, methods=["get"])
     def render(self, request, pk=None):
         """
         Return dashboard with resolved chart data for each chart in layout.
+        Accepts optional `global_filters` query param (JSON-encoded array)
+        to apply to all charts.
         """
         dashboard = self.get_object()
         layout = dashboard.layout or {"charts": []}
@@ -69,6 +95,16 @@ class DashboardViewSet(viewsets.ModelViewSet):
         chart_entries = layout.get("charts", [])
         if not isinstance(chart_entries, list):
             chart_entries = []
+
+        # Parse global filters from query param (passed by frontend)
+        global_filters_raw = request.query_params.get("global_filters")
+        global_filters = []
+        if global_filters_raw:
+            import json
+            try:
+                global_filters = json.loads(global_filters_raw)
+            except (json.JSONDecodeError, TypeError):
+                pass
 
         from charts.models import Chart
         from charts.serializers import ChartSerializer
@@ -101,6 +137,7 @@ class DashboardViewSet(viewsets.ModelViewSet):
                 "description": dashboard.description,
                 "layout": layout,
                 "charts_data": charts_data,
+                "filters": dashboard.filters,
             }
         )
         return Response(serializer.data)

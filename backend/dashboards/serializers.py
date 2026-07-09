@@ -17,6 +17,7 @@ class DashboardSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "layout",
+            "filters",
             "chart_count",
             "created_by",
             "created_by_name",

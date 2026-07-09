@@ -14,6 +14,10 @@ class Dashboard(models.Model):
         null=True, blank=True, verbose_name=_("Layout"),
         help_text=_("Dashboard layout: {charts: [{chart_id, x, y, w, h}]}"),
     )
+    filters = models.JSONField(
+        default=list, blank=True, verbose_name=_("Filters"),
+        help_text=_("Global filter definitions: [{id, name, type, column, dataset, defaultValue, options}]"),
+    )
     created_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
