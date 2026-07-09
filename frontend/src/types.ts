@@ -32,12 +32,32 @@ export type ChartType =
   | "pie"
   | "scatter"
   | "area"
-  | "heatmap";
+  | "heatmap"
+  | "kpi";
 
 export interface Filter {
   column: string;
   operator: "eq" | "neq" | "gt" | "gte" | "lt" | "lte" | "in" | "contains";
   value: string | number | (string | number)[];
+}
+
+export interface KPIComparison {
+  type: "previous_period" | "previous_year" | "static";
+  value?: number;
+}
+
+export interface KPIThresholds {
+  warning: number;
+  critical: number;
+  reversed?: boolean;
+}
+
+export interface KPIChartConfig {
+  metric: string;
+  aggregation: "sum" | "avg" | "count" | "min" | "max";
+  format: "number" | "currency" | "percentage";
+  comparison?: KPIComparison;
+  thresholds?: KPIThresholds;
 }
 
 export interface ChartConfig {
@@ -48,6 +68,11 @@ export interface ChartConfig {
   sort?: { column: string; direction: "asc" | "desc" };
   limit?: number;
   aggregate?: "sum" | "avg" | "count" | "min" | "max" | "none";
+  // KPI-specific fields
+  metric?: string;
+  kpi_format?: "number" | "currency" | "percentage";
+  kpi_comparison?: KPIComparison;
+  kpi_thresholds?: KPIThresholds;
 }
 
 export interface Chart {

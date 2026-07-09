@@ -7,6 +7,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import GridLayout from "react-grid-layout";
 import type { Layout, LayoutItem } from "react-grid-layout";
 import EChartRenderer from "../components/charts/EChartRenderer";
+import KPIWidget from "../components/charts/KPIWidget";
 import { buildEChartsOption } from "../utils/chartOptions";
 import { fetchChartData } from "../api/charts";
 import { DashboardFilters } from "../components/dashboard/DashboardFilters";
@@ -246,6 +247,17 @@ export default function DashboardView() {
                 ? buildEChartsOption(dataWrapper.data.chart_type, dataWrapper.data)
                 : {};
 
+              const isKpi = chartInfo?.chart_type === "kpi";
+              const kpiValue = isKpi && dataWrapper?.data?.rows?.[0]
+                ? Object.values(dataWrapper.data.rows[0])[0] as number | string
+                : null;
+              const cfg = chartInfo?.config as Record<string, unknown> | undefined;
+              const kpiConfig = {
+                format: (cfg?.kpi_format as "number" | "currency" | "percentage") || "number",
+                thresholds: cfg?.kpi_thresholds as { warning: number; critical: number; reversed?: boolean } | undefined,
+                comparison: cfg?.kpi_comparison as { type: "previous_period" | "previous_year" | "static"; value?: number } | undefined,
+              };
+
               return (
                 <div key={item.i} className="bg-white rounded-lg shadow-sm border overflow-hidden">
                   <div className="flex justify-between items-center px-3 py-2 bg-gray-50 border-b">
@@ -267,6 +279,16 @@ export default function DashboardView() {
                       <div className="h-full flex items-center justify-center">
                         <Spin />
                       </div>
+                    ) : isKpi ? (
+                      <KPIWidget
+                        label={chartInfo?.name || `Chart #${chartId}`}
+                        value={kpiValue ?? 0}
+                        format={kpiConfig.format}
+                        thresholds={kpiConfig.thresholds}
+                        previous={kpiConfig.comparison?.type === "static" ? kpiConfig.comparison.value ?? null : null}
+                        loading={false}
+                        className="h-full"
+                      />
                     ) : (
                       <EChartRenderer
                         option={chartOption as Record<string, unknown>}

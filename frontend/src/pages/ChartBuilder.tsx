@@ -1,15 +1,16 @@
 import { useEffect, useState, useCallback } from "react";
-import { Select, Button, Spin, Alert, Card, Input, message } from "antd";
+import { Select, Button, Spin, Alert, Card, Input, InputNumber, message } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { useChartStore } from "../store/chartStore";
 import { useDatasetStore } from "../store/datasetStore";
 import EChartRenderer from "../components/charts/EChartRenderer";
+import KPIWidget from "../components/charts/KPIWidget";
 import ChartTypeSelector from "../components/charts/ChartTypeSelector";
 import ColumnMapper from "../components/charts/ColumnMapper";
 import FilterBuilder from "../components/charts/FilterBuilder";
 import { buildEChartsOption } from "../utils/chartOptions";
 import { previewChartData } from "../api/charts";
-import type { ChartType, ChartConfig, Column, Filter } from "../types";
+import type { ChartType, ChartConfig, Column, Filter, KPIChartConfig } from "../types";
 
 const AGGREGATE_REQUIRED: ChartType[] = ["pie"];
 const AGGREGATE_DISABLED: ChartType[] = ["scatter", "heatmap"];
@@ -78,13 +79,17 @@ export default function ChartBuilder() {
   };
 
   const fetchPreview = useCallback(async () => {
-    if (!selectedDataset || !xAxis || !yAxis) return;
+    if (!selectedDataset) return;
+    const isKpi = chartType === "kpi";
+    if (!isKpi && (!xAxis || !yAxis)) return;
+    if (isKpi && !yAxis) return;
     setDataLoading(true);
     setDataError(null);
     try {
       const agg = aggregate === "none" ? undefined : aggregate;
       const config: ChartConfig = {
-        xAxis, yAxis, groupBy,
+        xAxis: isKpi ? "" : xAxis,
+        yAxis, groupBy,
         aggregate: agg as ChartConfig["aggregate"],
         filters: filters.filter((f) => f.column),
       };
@@ -156,7 +161,7 @@ export default function ChartBuilder() {
         </Button>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <Card title="Basic Info">
             <input
               id="chart-name"
@@ -185,6 +190,116 @@ export default function ChartBuilder() {
           <Card title="Chart Type">
             <ChartTypeSelector value={chartType} onChange={handleChartTypeChange} />
           </Card>
+          {chartType === "kpi" && (
+            <Card title="KPI Configuration">
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">Metric Column</label>
+                  <Select
+                    value={yAxis || undefined}
+                    onChange={(v) => { setYAxis(v); setChartData(null); }}
+                    placeholder="Select metric column"
+                    className="w-full"
+                    options={columns.map((c: Column) => ({ value: c.name, label: c.name }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">Aggregation</label>
+                  <Select
+                    value={aggregate}
+                    onChange={(v) => setAggregate(v)}
+                    className="w-full"
+                    options={[
+                      { value: "sum", label: "Sum" },
+                      { value: "avg", label: "Average" },
+                      { value: "count", label: "Count" },
+                      { value: "min", label: "Minimum" },
+                      { value: "max", label: "Maximum" },
+                    ]}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">Format</label>
+                  <Select
+                    value={(currentChart?.config as ChartConfig)?.kpi_format || "number"}
+                    onChange={(v) => {
+                      const cfg = (currentChart?.config as ChartConfig) || {};
+                      cfg.kpi_format = v as "number" | "currency" | "percentage";
+                      setChartData(null);
+                    }}
+                    className="w-full"
+                    options={[
+                      { value: "number", label: "Number" },
+                      { value: "currency", label: "Currency ($)" },
+                      { value: "percentage", label: "Percentage (%)" },
+                    ]}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">Comparison</label>
+                  <Select
+                    value={(currentChart?.config as ChartConfig)?.kpi_comparison?.type || "none"}
+                    onChange={(v) => {
+                      const cfg = (currentChart?.config as ChartConfig) || {};
+                      if (v === "none") {
+                        delete cfg.kpi_comparison;
+                      } else {
+                        cfg.kpi_comparison = { type: v as "previous_period" | "previous_year" | "static", value: 0 };
+                      }
+                      setChartData(null);
+                    }}
+                    className="w-full"
+                    options={[
+                      { value: "none", label: "No comparison" },
+                      { value: "previous_period", label: "Previous period" },
+                      { value: "previous_year", label: "Previous year" },
+                      { value: "static", label: "Static target" },
+                    ]}
+                  />
+                  {(currentChart?.config as ChartConfig)?.kpi_comparison?.type === "static" && (
+                    <div className="mt-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-1">Target Value</label>
+                      <Input
+                        type="number"
+                        defaultValue={(currentChart?.config as ChartConfig)?.kpi_comparison?.value || 0}
+                        onChange={(e) => {
+                          const cfg = (currentChart?.config as ChartConfig) || {};
+                          if (!cfg.kpi_comparison) cfg.kpi_comparison = { type: "static", value: 0 };
+                          cfg.kpi_comparison.value = parseFloat(e.target.value);
+                        }}
+                        placeholder="Target value"
+                      />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">Thresholds</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      type="number"
+                      defaultValue={(currentChart?.config as ChartConfig)?.kpi_thresholds?.warning}
+                      placeholder="Warning threshold"
+                      onChange={(e) => {
+                        const cfg = (currentChart?.config as ChartConfig) || {};
+                        if (!cfg.kpi_thresholds) cfg.kpi_thresholds = { warning: 0, critical: 0 };
+                        cfg.kpi_thresholds.warning = parseFloat(e.target.value);
+                      }}
+                    />
+                    <Input
+                      type="number"
+                      defaultValue={(currentChart?.config as ChartConfig)?.kpi_thresholds?.critical}
+                      placeholder="Critical threshold"
+                      onChange={(e) => {
+                        const cfg = (currentChart?.config as ChartConfig) || {};
+                        if (!cfg.kpi_thresholds) cfg.kpi_thresholds = { warning: 0, critical: 0 };
+                        cfg.kpi_thresholds.critical = parseFloat(e.target.value);
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
           {columns.length > 0 && (
             <Card title="Column Mapping">
               <ColumnMapper
@@ -210,7 +325,7 @@ export default function ChartBuilder() {
               />
             </Card>
           )}
-          {selectedDataset && xAxis && yAxis && (
+          {(chartType === "kpi" ? selectedDataset && yAxis : selectedDataset && xAxis && yAxis) && (
             <Button
               type="default"
               onClick={fetchPreview}
@@ -232,6 +347,15 @@ export default function ChartBuilder() {
             ) : !chartData ? (
               <div className="h-80 flex items-center justify-center text-gray-400">
                 <p>Configure your chart and click "Fetch Preview Data"</p>
+              </div>
+            ) : chartType === "kpi" && chartData ? (
+              <div className="h-80 flex items-center justify-center">
+                <KPIWidget
+                  label={(chartData as any)?.rows?.[0] ? "KPI" : "No Data"}
+                  value={(chartData as any)?.rows?.[0]?.[Object.keys((chartData as any)?.rows?.[0] || {})[0]] ?? 0}
+                  format={(currentChart?.config as ChartConfig)?.kpi_format || "number"}
+                  thresholds={(currentChart?.config as ChartConfig)?.kpi_thresholds}
+                />
               </div>
             ) : (
               <EChartRenderer option={option as Record<string, unknown>} height={350} />

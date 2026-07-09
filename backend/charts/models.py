@@ -15,6 +15,7 @@ class Chart(models.Model):
         ("scatter", _("Scatter")),
         ("area", _("Area")),
         ("heatmap", _("Heatmap")),
+        ("kpi", _("KPI / Scorecard")),
     ]
 
     name = models.CharField(max_length=100, verbose_name=_("Name"))

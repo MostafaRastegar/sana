@@ -49,13 +49,17 @@ class ChartViewSet(viewsets.ModelViewSet):
         sort_config = config.get("sort")
         filters_config = config.get("filters", [])
 
-        if not x_axis or not y_axis:
+        chart_type = config.get("chart_type") or getattr(self, 'chart_type', None)
+        is_kpi = chart_type == "kpi"
+
+        if not is_kpi and (not x_axis or not y_axis):
             raise DmvnException(
                 "x_axis and y_axis are required in chart config.",
                 status_code=400,
                 code="bad_request",
             )
 
+        group_cols = []
         if aggregate and aggregate != "none":
             agg_func = {
                 "sum": "SUM",
@@ -65,15 +69,21 @@ class ChartViewSet(viewsets.ModelViewSet):
                 "max": "MAX",
             }.get(aggregate, "SUM")
 
-            select_cols = [f'"{x_axis}"']
-            group_cols = [f'"{x_axis}"']
+            if is_kpi:
+                # KPI mode: single aggregate value, no grouping
+                metric_col = config.get("metric") or y_axis
+                select_cols = [f'{agg_func}("{metric_col}") as "{metric_col}"']
+                sql = f'SELECT {", ".join(select_cols)} FROM "{table_name}"'
+            else:
+                select_cols = [f'"{x_axis}"']
+                group_cols = [f'"{x_axis}"']
 
-            if group_by:
-                select_cols.append(f'"{group_by}"')
-                group_cols.append(f'"{group_by}"')
+                if group_by:
+                    select_cols.append(f'"{group_by}"')
+                    group_cols.append(f'"{group_by}"')
 
-            select_cols.append(f'{agg_func}("{y_axis}") as "{y_axis}"')
-            sql = f'SELECT {", ".join(select_cols)} FROM "{table_name}"'
+                select_cols.append(f'{agg_func}("{y_axis}") as "{y_axis}"')
+                sql = f'SELECT {", ".join(select_cols)} FROM "{table_name}"'
         else:
             sql = f'SELECT * FROM "{table_name}"'
 
@@ -225,5 +235,6 @@ class ChartViewSet(viewsets.ModelViewSet):
                     code="table_not_found",
                 )
 
+        self.chart_type = chart_type
         sql, params = self._build_chart_sql(config, table_name)
         return Response(self._execute_chart_sql(sql, params, chart_type, config))

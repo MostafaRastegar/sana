@@ -4,6 +4,11 @@ export function buildEChartsOption(
   chartType: ChartType,
   data: ChartData
 ): Record<string, unknown> {
+  // KPI charts don't use ECharts — handled by KPIWidget directly
+  if (chartType === "kpi") {
+    return {};
+  }
+
   const { columns, rows, config } = data;
 
   if (!rows || rows.length === 0) {

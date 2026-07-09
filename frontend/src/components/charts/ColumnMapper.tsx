@@ -21,6 +21,7 @@ const LABELS: Record<ChartType, { x: string; y: string; groupBy: boolean; aggreg
   pie: { x: "Label", y: "Value", groupBy: false, aggregate: true },
   scatter: { x: "X Value", y: "Y Value", groupBy: false, aggregate: false },
   heatmap: { x: "Row", y: "Column", groupBy: false, aggregate: false },
+  kpi: { x: "Label", y: "Value", groupBy: false, aggregate: true },
 };
 
 export default function ColumnMapper({
