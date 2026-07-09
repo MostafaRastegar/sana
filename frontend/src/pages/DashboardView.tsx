@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Spin, Alert, Button, Modal, Select, message } from "antd";
-import { EditOutlined, PlusOutlined, SaveOutlined, FilterOutlined } from "@ant-design/icons";
+import { Spin, Alert, Button, Modal, Select, message, Tag } from "antd";
+import { EditOutlined, PlusOutlined, SaveOutlined, FilterOutlined, ShareAltOutlined } from "@ant-design/icons";
 import { useDashboardStore } from "../store/dashboardStore";
 import { useChartStore } from "../store/chartStore";
 import { useParams, useNavigate } from "react-router-dom";
@@ -13,6 +13,7 @@ import { buildEChartsOption } from "../utils/chartOptions";
 import { fetchChartData } from "../api/charts";
 import { DashboardFilters } from "../components/dashboard/DashboardFilters";
 import { FilterManager } from "../components/dashboard/FilterManager";
+import ShareModal from "../components/dashboard/ShareModal";
 import type { Chart, ChartData, DashboardLayoutChart } from "../types";
 import "react-grid-layout/css/styles.css";
 
@@ -37,6 +38,7 @@ export default function DashboardView() {
   const filterValuesRef = useRef(filterValues);
   filterValuesRef.current = filterValues;
   const [filterManagerOpen, setFilterManagerOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const chartRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
@@ -178,6 +180,9 @@ export default function DashboardView() {
   if (error) return <Alert type="error" message={error} className="m-4" />;
   if (!currentDashboard) return <Alert type="info" message="Dashboard not found" className="m-4" />;
 
+  const canEdit = currentDashboard.user_permission === "admin" ||
+    currentDashboard.user_permission === "edit" ||
+    currentDashboard.is_owner;
   const addedChartIds = layout.map((l: LayoutItem) => parseInt(l.i));
   const availableCharts = charts.filter((c: Chart) => !addedChartIds.includes(c.id));
 
@@ -189,16 +194,28 @@ export default function DashboardView() {
           {currentDashboard.description && (
             <p className="text-gray-500">{currentDashboard.description}</p>
           )}
+          {currentDashboard.user_permission && (
+            <Tag color={currentDashboard.user_permission === "admin" ? "red" : currentDashboard.user_permission === "edit" ? "blue" : "green"}>
+              {currentDashboard.user_permission.toUpperCase()}
+            </Tag>
+          )}
         </div>
         <div className="space-x-2">
-          <Button icon={<FilterOutlined />} onClick={() => setFilterManagerOpen(true)}>
-            Manage Filters
-          </Button>
-          {!isEditing ? (
+          {canEdit && (
+            <>
+              <Button icon={<ShareAltOutlined />} onClick={() => setShareModalOpen(true)}>
+                Share
+              </Button>
+              <Button icon={<FilterOutlined />} onClick={() => setFilterManagerOpen(true)}>
+                Manage Filters
+              </Button>
+            </>
+          )}
+          {canEdit && !isEditing ? (
             <Button icon={<EditOutlined />} onClick={() => setIsEditing(true)}>
               Edit Layout
             </Button>
-          ) : (
+          ) : canEdit && isEditing ? (
             <>
               <Button icon={<PlusOutlined />} onClick={() => setAddModalOpen(true)}>
                 Add Chart
@@ -208,7 +225,7 @@ export default function DashboardView() {
               </Button>
               <Button onClick={() => setIsEditing(false)}>Cancel</Button>
             </>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -223,9 +240,11 @@ export default function DashboardView() {
         <div className="bg-gray-50 h-96 flex items-center justify-center rounded-lg border-2 border-dashed">
           <div className="text-center">
             <p className="text-gray-400 mb-2">No charts in this dashboard</p>
-            <Button icon={<PlusOutlined />} onClick={() => setAddModalOpen(true)}>
-              Add Chart
-            </Button>
+            {canEdit && (
+              <Button icon={<PlusOutlined />} onClick={() => setAddModalOpen(true)}>
+                Add Chart
+              </Button>
+            )}
           </div>
         </div>
       ) : (
@@ -273,7 +292,7 @@ export default function DashboardView() {
                         chartId={chartId}
                         chartName={chartInfo?.name || `Chart #${chartId}`}
                       />
-                      {isEditing && (
+                      {isEditing && canEdit && (
                         <Button
                           danger
                           size="small"
@@ -333,6 +352,21 @@ export default function DashboardView() {
           />
         )}
       </Modal>
+
+      <ShareModal
+        open={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        dashboardId={parseInt(id!)}
+        isPublic={currentDashboard.is_public}
+        isOwner={currentDashboard.is_owner}
+        onTogglePublic={(isPublic) => {
+          useDashboardStore.setState((state) => ({
+            currentDashboard: state.currentDashboard
+              ? { ...state.currentDashboard, is_public: isPublic }
+              : null,
+          }));
+        }}
+      />
 
       <FilterManager
         open={filterManagerOpen}

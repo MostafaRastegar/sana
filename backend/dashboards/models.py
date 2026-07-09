@@ -18,6 +18,7 @@ class Dashboard(models.Model):
         default=list, blank=True, verbose_name=_("Filters"),
         help_text=_("Global filter definitions: [{id, name, type, column, dataset, defaultValue, options}]"),
     )
+    is_public = models.BooleanField(default=False, verbose_name=_("Is Public"))
     created_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
@@ -36,7 +37,6 @@ class Dashboard(models.Model):
 
     def __str__(self):
         return self.name
-
     def clean(self):
         from django.core.exceptions import ValidationError
         if not self.name.strip():
@@ -46,3 +46,49 @@ class Dashboard(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+
+class DashboardPermission(models.Model):
+    """Model representing user permissions on a dashboard."""
+
+    PERMISSION_CHOICES = [
+        ("view", _("View")),
+        ("edit", _("Edit")),
+        ("admin", _("Admin")),
+    ]
+
+    dashboard = models.ForeignKey(
+        Dashboard,
+        on_delete=models.CASCADE,
+        related_name="permissions",
+        verbose_name=_("Dashboard"),
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="dashboard_permissions",
+        verbose_name=_("User"),
+    )
+    permission = models.CharField(
+        max_length=10,
+        choices=PERMISSION_CHOICES,
+        default="view",
+        verbose_name=_("Permission"),
+    )
+    shared_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="shared_dashboards",
+        verbose_name=_("Shared By"),
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Created At"))
+
+    class Meta:
+        verbose_name = _("Dashboard Permission")
+        verbose_name_plural = _("Dashboard Permissions")
+        unique_together = ["dashboard", "user"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.dashboard.name} ({self.permission})"

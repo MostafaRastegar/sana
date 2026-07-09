@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Card, Button, Spin, Alert, Modal, Input, message, Row, Col } from "antd";
-import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Card, Button, Spin, Alert, Modal, Input, message, Row, Col, Tag } from "antd";
+import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined, ShareAltOutlined, GlobalOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useDashboardStore } from "../store/dashboardStore";
 
@@ -93,7 +93,17 @@ export default function DashboardList() {
             <Col xs={24} sm={12} lg={8} key={dashboard.id}>
               <Card
                 hoverable
-                title={dashboard.name}
+                title={
+                  <div className="flex items-center gap-1">
+                    <span className="truncate">{dashboard.name}</span>
+                    {dashboard.is_public && <GlobalOutlined className="text-green-500 text-xs" />}
+                    {dashboard.user_permission && dashboard.user_permission !== "admin" && (
+                      <Tag color={dashboard.user_permission === "edit" ? "blue" : "green"} className="text-xs leading-none">
+                        {dashboard.user_permission.toUpperCase()}
+                      </Tag>
+                    )}
+                  </div>
+                }
                 actions={[
                   <EyeOutlined key="view" onClick={() => navigate(`/dashboards/${dashboard.id}`)} />,
                   <EditOutlined key="edit" onClick={() => openEdit(dashboard)} />,
@@ -103,9 +113,16 @@ export default function DashboardList() {
                 <p className="text-gray-500 min-h-[40px]">
                   {dashboard.description || "No description"}
                 </p>
-                <p className="text-blue-500 text-sm">
-                  {dashboard.chart_count} chart{dashboard.chart_count !== 1 ? "s" : ""}
-                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-blue-500 text-sm">
+                    {dashboard.chart_count} chart{dashboard.chart_count !== 1 ? "s" : ""}
+                  </span>
+                  {dashboard.shared_users_count > 0 && (
+                    <span className="text-gray-400 text-xs flex items-center gap-1">
+                      <ShareAltOutlined /> {dashboard.shared_users_count}
+                    </span>
+                  )}
+                </div>
               </Card>
             </Col>
           ))}

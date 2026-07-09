@@ -4,6 +4,7 @@ from . import views
 
 router = DefaultRouter()
 router.register(r"dashboards", views.DashboardViewSet, basename="dashboard")
+router.register(r"users/search", views.UserSearchView, basename="user-search")
 
 urlpatterns = [
     path("", include(router.urls)),

@@ -1,5 +1,10 @@
 import client from "./client";
-import type { Dashboard } from "../types";
+import type {
+  Dashboard,
+  DashboardPermission,
+  DashboardPermissionLevel,
+  UserSearchResult,
+} from "../types";
 
 export const fetchDashboards = async (params?: Record<string, unknown>) => {
   const { data } = await client.get("/dashboards/", { params });
@@ -57,4 +62,39 @@ export const renderDashboard = async (
     : {};
   const { data } = await client.get(`/dashboards/${id}/render/`, { params });
   return data;
+};
+
+// --- Sharing & Permissions ---
+
+export const fetchDashboardPermissions = async (id: number) => {
+  const { data } = await client.get(`/dashboards/${id}/permissions/`);
+  return data as DashboardPermission[];
+};
+
+export const shareDashboard = async (
+  dashboardId: number,
+  userId: number,
+  permission: DashboardPermissionLevel
+) => {
+  const { data } = await client.post(`/dashboards/${dashboardId}/permissions/`, {
+    user: userId,
+    permission,
+  });
+  return data as DashboardPermission;
+};
+
+export const unshareDashboard = async (dashboardId: number, permissionId: number) => {
+  await client.delete(`/dashboards/${dashboardId}/permissions/`, {
+    data: { id: permissionId },
+  });
+};
+
+export const toggleDashboardPublic = async (id: number, isPublic: boolean) => {
+  const { data } = await client.patch(`/dashboards/${id}/`, { is_public: isPublic });
+  return data as Dashboard;
+};
+
+export const searchUsers = async (query: string) => {
+  const { data } = await client.get(`/users/search/`, { params: { q: query } });
+  return data as UserSearchResult[];
 };

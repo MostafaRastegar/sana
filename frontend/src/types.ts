@@ -124,17 +124,39 @@ export interface DashboardLayout {
   charts: DashboardLayoutChart[];
 }
 
+export type DashboardPermissionLevel = "view" | "edit" | "admin";
+
 export interface Dashboard {
   id: number;
   name: string;
   description: string;
   layout: DashboardLayout | null;
   filters: DashboardFilter[];
+  is_public: boolean;
   chart_count: number;
+  shared_users_count: number;
+  is_owner: boolean;
+  user_permission: DashboardPermissionLevel | null;
   created_by: number;
   created_by_name: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface DashboardPermission {
+  id: number;
+  dashboard: number;
+  user: number;
+  user_name: string;
+  permission: DashboardPermissionLevel;
+  shared_by: number;
+  created_at: string;
+}
+
+export interface UserSearchResult {
+  id: number;
+  username: string;
+  email: string;
 }
 
 export interface SavedQuery {

@@ -3,6 +3,20 @@ from django.core.exceptions import ImproperlyConfigured
 from typing import Any
 
 
+class IsAdminUserOrReadOnly(BasePermission):
+    """
+    Permission that allows read-only access to any authenticated user,
+    and write access only to admin/superuser.
+    """
+
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        if request.method in ("GET", "HEAD", "OPTIONS"):
+            return True
+        return request.user.is_staff or request.user.is_superuser
+
+
 class ModelActionPermission(BasePermission):
     """
     Permission class that maps ViewSet actions to model permissions.
@@ -67,18 +81,38 @@ class ModelActionPermission(BasePermission):
     def has_permission(self, request, view) -> Any:
         """
         Check if the user has permission for the current action.
+
+        - Superusers always pass.
+        - Staff users must have the required django permission.
+        - Regular users pass authentication check — actual access control
+          is enforced by the view's get_queryset() and perform_*() methods.
         """
         if not request.user or not request.user.is_authenticated:
             return False
+
+        # Superusers bypass all permission checks
+        if request.user.is_superuser:
+            return True
 
         action = view.action
         if not action:
             return False
 
-        required_permission = self.get_required_permission(view, action)
+        # Staff users: enforce django model permissions
+        if request.user.is_staff:
+            required_permission = self.get_required_permission(view, action)
+            if not request.user.has_perm(required_permission):
+                # Allow read-only actions even without explicit permission
+                if action in ("list", "retrieve"):
+                    return True
+                return False
+            return True
 
-        # Check if user has the required permission
-        return request.user.has_perm(required_permission)
+        # Regular (non-staff) users: allow if authenticated.
+        # Fine-grained access control is delegated to:
+        #   - get_queryset() — filters visible objects
+        #   - perform_create/update/destroy — checks ownership/permissions
+        return True
 
     def _get_model_class(self, view):
         """
