@@ -204,6 +204,49 @@ class ChartViewSet(viewsets.ModelViewSet):
         sql, params = self._build_chart_sql(config, table_name)
         return Response(self._execute_chart_sql(sql, params, chart.chart_type, config))
 
+    @action(detail=True, methods=["get"])
+    def export(self, request, pk=None):
+        """Export chart data as CSV."""
+        chart = self.get_object()
+        dataset = chart.dataset
+        table_name = dataset.table_name
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name=%s",
+                [table_name],
+            )
+            if not cursor.fetchone():
+                raise DmvnException(
+                    f"Table '{table_name}' does not exist.",
+                    status_code=404,
+                    code="table_not_found",
+                )
+
+        config = dict(chart.config)
+        sql, params = self._build_chart_sql(config, table_name)
+
+        with connection.cursor() as cursor:
+            cursor.execute(sql, params)
+            columns = [col[0] for col in cursor.description]
+            rows = cursor.fetchall()
+
+        fmt = request.query_params.get("format", "csv")
+        if fmt == "csv":
+            import csv
+            from django.http import HttpResponse
+
+            response = HttpResponse(content_type="text/csv")
+            response["Content-Disposition"] = f'attachment; filename="{chart.name}.csv"'
+
+            writer = csv.writer(response)
+            writer.writerow(columns)
+            for row in rows:
+                writer.writerow(row)
+            return response
+
+        return Response({"error": "Unsupported format"}, status=400)
+
     @action(detail=False, methods=["post"])
     def preview(self, request):
         """Compute chart data without saving a chart (preview mode)."""
