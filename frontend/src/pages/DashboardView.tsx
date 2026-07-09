@@ -8,6 +8,7 @@ import GridLayout from "react-grid-layout";
 import type { Layout, LayoutItem } from "react-grid-layout";
 import EChartRenderer from "../components/charts/EChartRenderer";
 import KPIWidget from "../components/charts/KPIWidget";
+import ChartExportButton from "../components/charts/ChartExportButton";
 import { buildEChartsOption } from "../utils/chartOptions";
 import { fetchChartData } from "../api/charts";
 import { DashboardFilters } from "../components/dashboard/DashboardFilters";
@@ -36,6 +37,7 @@ export default function DashboardView() {
   const filterValuesRef = useRef(filterValues);
   filterValuesRef.current = filterValues;
   const [filterManagerOpen, setFilterManagerOpen] = useState(false);
+  const chartRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     const handleResize = () => setWidth(window.innerWidth);
@@ -108,7 +110,6 @@ export default function DashboardView() {
         const validOps = ["eq", "neq", "gt", "gte", "lt", "lte"] as const;
         type Op = typeof validOps[number];
         let operator: Op = (f.operator as Op) || "eq";
-        // Parse operator-prefixed values from number filter type (e.g. "gt:50")
         if (typeof raw === "string" && /^(eq|neq|gt|gte|lt|lte):/.test(raw)) {
           const parts = raw.split(":");
           operator = (validOps.includes(parts[0] as Op) ? parts[0] : "eq") as Op;
@@ -129,7 +130,6 @@ export default function DashboardView() {
     setFilterValues({});
   };
 
-  // Reload charts when filter values change (using ref to avoid stale closure)
   useEffect(() => {
     if (!currentDashboard?.layout?.charts?.length) return;
     reloadAllCharts();
@@ -258,23 +258,33 @@ export default function DashboardView() {
                 comparison: cfg?.kpi_comparison as { type: "previous_period" | "previous_year" | "static"; value?: number } | undefined,
               };
 
+              const setChartRef = (el: HTMLDivElement | null) => {
+                chartRefs.current[item.i] = el;
+              };
+
               return (
                 <div key={item.i} className="bg-white rounded-lg shadow-sm border overflow-hidden">
                   <div className="flex justify-between items-center px-3 py-2 bg-gray-50 border-b">
                     <span className="font-medium text-sm truncate">
                       {chartInfo?.name || `Chart #${chartId}`}
                     </span>
-                    {isEditing && (
-                      <Button
-                        danger
-                        size="small"
-                        onClick={() => handleRemoveChart(item.i)}
-                      >
-                        Remove
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-1">
+                      <ChartExportButton
+                        chartId={chartId}
+                        chartName={chartInfo?.name || `Chart #${chartId}`}
+                      />
+                      {isEditing && (
+                        <Button
+                          danger
+                          size="small"
+                          onClick={() => handleRemoveChart(item.i)}
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <div className="p-2 h-[calc(100%-40px)]">
+                  <div ref={setChartRef} data-chart-id={chartId} className="p-2 h-[calc(100%-40px)]">
                     {dataWrapper?.loading ? (
                       <div className="h-full flex items-center justify-center">
                         <Spin />
@@ -335,7 +345,6 @@ export default function DashboardView() {
               ? { ...state.currentDashboard, filters }
               : null,
           }));
-          // populate default values into filter state so charts reload
           const defaults: Record<string, string | number | null> = {};
           filters.forEach((f) => {
             if (f.defaultValue != null && f.defaultValue !== "") {
