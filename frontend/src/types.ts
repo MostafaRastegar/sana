@@ -156,3 +156,52 @@ export interface QueryResult {
   page: number;
   page_size: number;
 }
+
+export type AlertCondition = "above" | "below" | "equals" | "change_percent";
+export type AlertAggregation = "sum" | "avg" | "count" | "min" | "max";
+export type AlertInterval = "hourly" | "daily" | "weekly" | "monthly";
+
+export interface DataAlert {
+  id: number;
+  name: string;
+  description: string;
+  dataset: number;
+  dataset_name: string;
+  metric: string;
+  aggregation: AlertAggregation;
+  condition: AlertCondition;
+  condition_display: string;
+  threshold: number;
+  check_interval: AlertInterval;
+  notification_channels: string[];
+  recipients: number[];
+  recipient_ids: number[];
+  webhook_url: string;
+  filters: Record<string, unknown> | null;
+  is_active: boolean;
+  created_by: number;
+  created_by_name: string;
+  last_checked: string | null;
+  last_triggered: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AlertHistory {
+  id: number;
+  alert: number;
+  alert_name: string;
+  triggered_at: string;
+  actual_value: number;
+  threshold: number;
+  condition: string;
+  message: string;
+  notification_sent: boolean;
+  notification_response: string;
+}
+
+export interface AlertStats {
+  total_alerts: number;
+  active_alerts: number;
+  triggered_last_24h: number;
+}

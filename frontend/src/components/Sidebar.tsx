@@ -5,6 +5,7 @@ import {
   BarChartOutlined,
   TableOutlined,
   CodeOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
 import { useUIStore } from "../store/uiStore";
 
@@ -30,6 +31,11 @@ export default function Sidebar() {
       key: "/datasets",
       icon: <TableOutlined />,
       label: "Datasets",
+    },
+    {
+      key: "/alerts",
+      icon: <BellOutlined />,
+      label: "Alerts",
     },
     {
       key: "/sql",
