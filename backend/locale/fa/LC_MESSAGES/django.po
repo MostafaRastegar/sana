@@ -1,0 +1,1309 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-16 09:46+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: accounts/admin.py:61
+msgid "Personal info"
+msgstr "اطلاعات شخصی"
+
+#: accounts/admin.py:62
+msgid "Permissions"
+msgstr "مجوزها"
+
+#: accounts/admin.py:65
+msgid "Important dates"
+msgstr "تاریخ‌های مهم"
+
+#: accounts/admin.py:83
+msgid "Password changed successfully."
+msgstr "رمز عبور با موفقیت تغییر یافت."
+
+#: accounts/admin.py:89
+#, python-format
+msgid "Change password: %(name)s"
+msgstr "تغییر رمز عبور: %(name)s"
+
+#: accounts/admin.py:89
+msgid "Change password"
+msgstr "تغییر رمز عبور"
+
+#: accounts/models.py:19
+msgid "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+msgstr "الزامی. ۱۵۰ کاراکتر یا کمتر. فقط حروف، اعداد و @/./+/-/_."
+
+#: accounts/models.py:22
+msgid "A user with that username already exists."
+msgstr "کاربری با این نام کاربری از قبل وجود دارد."
+
+#: accounts/models.py:25
+msgid "first name"
+msgstr "نام"
+
+#: accounts/models.py:26
+msgid "last name"
+msgstr "نام خانوادگی"
+
+#: accounts/models.py:27
+msgid "email address"
+msgstr "آدرس ایمیل"
+
+#: accounts/models.py:29
+msgid "staff status"
+msgstr "وضعیت کارکنان"
+
+#: accounts/models.py:31
+msgid "Designates whether the user can log into this admin site."
+msgstr "مشخص می‌کند آیا کاربر می‌تواند وارد سایت مدیریت شود یا خیر."
+
+#: accounts/models.py:34
+msgid "active"
+msgstr "فعال"
+
+#: accounts/models.py:37
+msgid ""
+"Designates whether this user should be treated as active. Unselect this "
+"instead of deleting accounts."
+msgstr ""
+"مشخص می‌کند آیا این کاربر باید به عنوان فعال در نظر گرفته شود. به جای حذف "
+"حساب‌ها، این گزینه را غیرفعال کنید."
+
+#: accounts/models.py:41
+msgid "date joined"
+msgstr "تاریخ عضویت"
+
+#: accounts/models.py:42
+msgid "phone number"
+msgstr "شماره تلفن"
+
+#: accounts/models.py:43
+msgid "verified"
+msgstr "تأیید شده"
+
+#: accounts/models.py:44
+msgid "national ID"
+msgstr "کد ملی"
+
+#: accounts/models.py:51
+msgid "User's organization"
+msgstr "سازمان کاربر"
+
+#: accounts/models.py:60
+msgid "user"
+msgstr "کاربر"
+
+#: accounts/models.py:61
+msgid "users"
+msgstr "کاربران"
+
+#: accounts/models.py:101
+msgid "Organization this permission group belongs to"
+msgstr "سازمانی که این گروه مجوز به آن تعلق دارد"
+
+#: accounts/models.py:103 api/models.py:109 api/models.py:163
+#: settings/models.py:13 settings/models.py:46
+msgid "description"
+msgstr "توضیحات"
+
+#: accounts/models.py:108
+msgid "permission group"
+msgstr "گروه مجوز"
+
+#: accounts/models.py:109
+msgid "permission groups"
+msgstr "گروه‌های مجوز"
+
+#: accounts/serializers.py:52
+msgid "New passwords don't match"
+msgstr "رمزهای عبور جدید مطابقت ندارند"
+
+#: accounts/serializers.py:110
+msgid "This username is already taken."
+msgstr "این نام کاربری موجود است."
+
+#: accounts/serializers.py:133
+msgid "Passwords don't match"
+msgstr "رمز عبورها مطابقت ندارند"
+
+#: accounts/views.py:142
+msgid ""
+"Only organization administrators can modify username, phone number, national "
+"ID, verification status, active status, or groups."
+msgstr ""
+"فقط مدیران سازمان می‌توانند نام کاربری، شماره تلفن، کد ملی، وضعیت تأیید، "
+"وضعیت فعال یا گروه‌ها را تغییر دهند."
+
+#: accounts/views.py:151
+msgid "You can only modify users in your organization."
+msgstr "شما فقط می‌توانید کاربران سازمان خود را تغییر دهید."
+
+#: accounts/views.py:164
+msgid "Only organization administrators can delete users."
+msgstr "فقط مدیران سازمان می‌توانند کاربران را حذف کنند."
+
+#: accounts/views.py:173
+msgid "You can only delete users in your organization."
+msgstr "شما فقط می‌توانید کاربران سازمان خود را حذف کنید."
+
+#: accounts/views.py:226
+msgid "current_password is required"
+msgstr "رمز عبور فعلی الزامی است"
+
+#: accounts/views.py:228
+msgid "Current password is incorrect"
+msgstr "رمز عبور فعلی نادرست است"
+
+#: accounts/views.py:232
+msgid "Only organization administrators can reset passwords"
+msgstr "فقط مدیران سازمان می‌توانند رمز عبورها را بازنشانی کنند"
+
+#: accounts/views.py:234
+msgid "You can only reset passwords for users in your organization"
+msgstr "شما فقط می‌توانید رمز عبور کاربران سازمان خود را بازنشانی کنید"
+
+#: accounts/views.py:250
+msgid "Password changed successfully"
+msgstr "رمز عبور با موفقیت تغییر یافت"
+
+#: activity_log/admin.py:24
+msgid "Content Type"
+msgstr "نوع محتوا"
+
+#: activity_log/admin.py:29
+msgid "Object"
+msgstr "شیء"
+
+#: activity_log/models.py:15
+msgid "Created"
+msgstr "ایجاد شد"
+
+#: activity_log/models.py:16
+msgid "Updated"
+msgstr "به‌روزرسانی شد"
+
+#: activity_log/models.py:17
+msgid "Deleted"
+msgstr "حذف شد"
+
+#: activity_log/models.py:18 api/models.py:152
+msgid "Completed"
+msgstr "تکمیل شد"
+
+#: activity_log/models.py:19
+msgid "Started"
+msgstr "شروع شد"
+
+#: activity_log/models.py:20
+msgid "Paused"
+msgstr "متوقف شد"
+
+#: activity_log/models.py:28 api/models.py:118 api/models.py:160
+msgid "status"
+msgstr "وضعیت"
+
+#: activity_log/models.py:32
+msgid "additional data"
+msgstr "داده‌های اضافی"
+
+#: activity_log/models.py:43
+msgid "activity log"
+msgstr "لاگ فعالیت"
+
+#: activity_log/models.py:44
+msgid "activity logs"
+msgstr "لاگ‌های فعالیت"
+
+#: activity_log/serializers.py:55
+msgid "System"
+msgstr "سیستم"
+
+#: activity_log/serializers.py:62
+msgid "{} created {}"
+msgstr "{} {} را ایجاد کرد"
+
+#: activity_log/serializers.py:64
+msgid "{} updated {}"
+msgstr "{} {} را به‌روزرسانی کرد"
+
+#: activity_log/serializers.py:66
+msgid "{} deleted {}"
+msgstr "{} {} را حذف کرد"
+
+#: activity_log/serializers.py:68
+msgid "{} completed {}"
+msgstr "{} {} را تکمیل کرد"
+
+#: activity_log/serializers.py:70
+msgid "{} started {}"
+msgstr "{} {} را شروع کرد"
+
+#: activity_log/serializers.py:72
+msgid "{} paused {}"
+msgstr "{} {} را متوقف کرد"
+
+#: activity_log/serializers.py:74
+msgid "{} performed {} on {}"
+msgstr "{} {} را روی {} انجام داد"
+
+#: api/admin.py:25
+msgid "Users"
+msgstr "کاربران"
+
+#: api/admin.py:43
+msgid "Job Types"
+msgstr "انواع کاری"
+
+#: api/admin.py:61 api/models.py:107
+msgid "Jobs"
+msgstr "کار‌ها"
+
+#: api/admin.py:88 settings/admin.py:33
+msgid "Settings"
+msgstr "تنظیمات"
+
+#: api/admin.py:91
+msgid "AI Features"
+msgstr "ویژگی‌های هوش مصنوعی"
+
+#: api/admin.py:94 settings/admin.py:58
+msgid "Timestamps"
+msgstr "برچسب‌های زمانی"
+
+#: api/admin.py:121
+msgid "Job"
+msgstr "کار"
+
+#: api/ai_service.py:43
+msgid "Error initializing AI service: {}"
+msgstr "خطا در مقداردهی اولیه سرویس هوش مصنوعی: {}"
+
+#: api/ai_service.py:49
+msgid "AI service switched to MOCK mode due to initialization error"
+msgstr "سرویس هوش مصنوعی به حالت MOCK تغییر یافت به دلیل خطای مقداردهی اولیه"
+
+#: api/ai_service.py:79
+msgid "Setting ai_mock must be a boolean value, current value: {!r} (type: {})"
+msgstr "تنظیمات ai_mock باید مقدار بولی داشته باشد، مقدار فعلی: {!r} (نوع: {})"
+
+#: api/ai_service.py:83
+msgid "Setting ai_api_key must be a string, current value: {!r} (type: {})"
+msgstr "تنظیمات ai_api_key باید رشته باشد، مقدار فعلی: {!r} (نوع: {})"
+
+#: api/ai_service.py:87
+msgid "Setting ai_base_url must be a string, current value: {!r} (type: {})"
+msgstr "تنظیمات ai_base_url باید رشته باشد، مقدار فعلی: {!r} (نوع: {})"
+
+#: api/ai_service.py:89
+msgid ""
+"Setting ai_base_url must start with http:// or https://, current value: {!r}"
+msgstr ""
+"تنظیمات ai_base_url باید با http:// یا https:// شروع شود، مقدار فعلی: {!r}"
+
+#: api/ai_service.py:93
+msgid "Setting ai_text_model must be a string, current value: {!r} (type: {})"
+msgstr "تنظیمات ai_text_model باید رشته باشد، مقدار فعلی: {!r} (نوع: {})"
+
+#: api/ai_service.py:95
+msgid "Setting ai_image_model must be a string, current value: {!r} (type: {})"
+msgstr "تنظیمات ai_image_model باید رشته باشد، مقدار فعلی: {!r} (نوع: {})"
+
+#: api/ai_service.py:99
+msgid ""
+"Setting ai_validate_key must be a boolean value, current value: {!r} (type: "
+"{})"
+msgstr ""
+"تنظیمات ai_validate_key باید مقدار بولی داشته باشد، مقدار فعلی: {!r} (نوع: "
+"{})"
+
+#: api/ai_service.py:103
+msgid "Setting ai_http_proxy must be a string, current value: {!r} (type: {})"
+msgstr "تنظیمات ai_http_proxy باید رشته باشد، مقدار فعلی: {!r} (نوع: {})"
+
+#: api/ai_service.py:105
+msgid "Setting ai_https_proxy must be a string, current value: {!r} (type: {})"
+msgstr "تنظیمات ai_https_proxy باید رشته باشد، مقدار فعلی: {!r} (نوع: {})"
+
+#: api/ai_service.py:108
+msgid "Settings validation errors:\n"
+msgstr "خطاهای اعتبارسنجی تنظیمات:\n"
+
+#: api/ai_service.py:117
+msgid "AI service running in MOCK mode"
+msgstr "سرویس هوش مصنوعی در حالت MOCK اجرا می‌شود"
+
+#: api/ai_service.py:122
+msgid "AI API key not configured - service will run in MOCK mode"
+msgstr ""
+"کلید API هوش مصنوعی پیکربندی نشده است - سرویس در حالت MOCK اجرا خواهد شد"
+
+#: api/ai_service.py:131
+msgid "Proxy configured for AI service: {}"
+msgstr "پراکسی برای سرویس هوش مصنوعی تنظیم شد: {}"
+
+#: api/ai_service.py:147
+msgid "API key validation failed, but service will continue: {}"
+msgstr "اعتبارسنجی کلید API ناموفق بود، اما سرویس ادامه خواهد یافت: {}"
+
+#: api/ai_service.py:149
+msgid "OpenAI client initialized successfully"
+msgstr "کلاینت OpenAI با موفقیت مقداردهی اولیه شد"
+
+#: api/ai_service.py:152
+msgid "Error initializing OpenAI client: {}"
+msgstr "خطا در مقداردهی اولیه کلاینت OpenAI: {}"
+
+#: api/ai_service.py:156
+msgid "AI service switched to MOCK mode due to client error"
+msgstr "سرویس هوش مصنوعی به حالت MOCK تغییر یافت به دلیل خطای کلاینت"
+
+#: api/ai_service.py:170
+msgid "Error retrieving setting {}: {}"
+msgstr "خطا در دریافت تنظیمات {}: {}"
+
+#: api/ai_service.py:178
+msgid "Validating API key..."
+msgstr "در حال اعتبارسنجی کلید API..."
+
+#: api/ai_service.py:181
+msgid "API key validated successfully"
+msgstr "کلید API با موفقیت اعتبارسنجی شد"
+
+#: api/ai_service.py:184
+msgid "Invalid API key: {}"
+msgstr "کلید API نامعتبر است: {}"
+
+#: api/ai_service.py:221
+msgid "Service running in MOCK mode"
+msgstr "سرویس در حالت MOCK اجرا می‌شود"
+
+#: api/ai_service.py:226
+msgid "OpenAI client not initialized"
+msgstr "کلاینت OpenAI مقداردهی اولیه نشده است"
+
+#: api/ai_service.py:235
+msgid "Connection to AI API successful"
+msgstr "اتصال به API هوش مصنوعی موفق است"
+
+#: api/ai_service.py:240
+msgid "Connection issue with API: {}"
+msgstr "مشکل در اتصال به API: {}"
+
+#: api/ai_service.py:244
+msgid "Error checking service health: {}"
+msgstr "خطا در بررسی سلامت سرویس: {}"
+
+#: api/ai_service.py:256 api/ai_service.py:292
+msgid "OpenAI client not initialized - API key missing"
+msgstr "کلاینت OpenAI مقداردهی اولیه نشده - کلید API وجود ندارد"
+
+#: api/ai_service.py:280
+msgid "Error generating AI text response: {}"
+msgstr "خطا در تولید پاسخ متنی هوش مصنوعی: {}"
+
+#: api/ai_service.py:318
+msgid "Error generating AI image: {}"
+msgstr "خطا در تولید تصویر هوش مصنوعی: {}"
+
+#: api/management/commands/seed_demo_data.py:412 api/views.py:1039
+#: api/views.py:1059
+#, fuzzy
+#| msgid "شما یک وظیفه جدید دریافت کردید: {}"
+msgid "یک وظیفه جدید ایجاد شد"
+msgstr "شما یک وظیفه جدید دریافت کردید: {}"
+
+#: api/management/commands/seed_demo_data.py:413 api/views.py:1040
+#: api/views.py:1060
+#, fuzzy
+#| msgid "شما یک وظیفه جدید دریافت کردید: {}"
+msgid "شما یک وظیفه جدید دارید: {}"
+msgstr "شما یک وظیفه جدید دریافت کردید: {}"
+
+#: api/models.py:18 api/models.py:44 api/models.py:235 settings/models.py:12
+#: settings/models.py:45
+msgid "name"
+msgstr "نام"
+
+#: api/models.py:25
+msgid "Organization manager"
+msgstr "مدیر سازمان"
+
+#: api/models.py:31
+msgid "organization"
+msgstr "سازمان"
+
+#: api/models.py:32
+msgid "organizations"
+msgstr "سازمان‌ها"
+
+#: api/models.py:45 api/models.py:69
+msgid "icon"
+msgstr "آیکون"
+
+#: api/models.py:50
+msgid "platform"
+msgstr "پلتفرم"
+
+#: api/models.py:51
+msgid "platforms"
+msgstr "پلتفرم‌ها"
+
+#: api/models.py:63 api/models.py:106 notification/models.py:29
+msgid "title"
+msgstr "عنوان"
+
+#: api/models.py:65
+msgid "regex pattern"
+msgstr "الگوی regex"
+
+#: api/models.py:67
+msgid "Invalid regex pattern"
+msgstr "الگوی regex نامعتبر"
+
+#: api/models.py:73
+msgid "operational"
+msgstr "عملیاتی"
+
+#: api/models.py:79
+msgid "job type"
+msgstr "نوع کار"
+
+#: api/models.py:80
+msgid "job types"
+msgstr "انواع کاری"
+
+#: api/models.py:94 notification/models.py:23
+msgid "Low"
+msgstr "کم"
+
+#: api/models.py:95 notification/models.py:24
+msgid "Medium"
+msgstr "متوسط"
+
+#: api/models.py:96 notification/models.py:25
+msgid "High"
+msgstr "زیاد"
+
+#: api/models.py:97 notification/models.py:26
+msgid "Urgent"
+msgstr "فوری"
+
+#: api/models.py:101
+msgid "Scheduled"
+msgstr "برنامه‌ریزی شده"
+
+#: api/models.py:102 api/models.py:151
+msgid "In Progress"
+msgstr "در حال انجام"
+
+#: api/models.py:103
+msgid "Done"
+msgstr "انجام شده"
+
+#: api/models.py:111 notification/models.py:38
+msgid "priority"
+msgstr "اولویت"
+
+#: api/models.py:113
+msgid "available tokens"
+msgstr "توکن‌های موجود"
+
+#: api/models.py:114 api/models.py:158
+msgid "due date"
+msgstr "تاریخ سررسید"
+
+#: api/models.py:115
+msgid "start date"
+msgstr "تاریخ شروع"
+
+#: api/models.py:116
+msgid "link"
+msgstr "لینک"
+
+#: api/models.py:120
+msgid "AI text enabled"
+msgstr "متن هوش مصنوعی فعال"
+
+#: api/models.py:121
+msgid "AI image enabled"
+msgstr "تصویر هوش مصنوعی فعال"
+
+#: api/models.py:122
+msgid "suggested file"
+msgstr "فایل پیشنهادی"
+
+#: api/models.py:123
+msgid "suggested text"
+msgstr "متن پیشنهادی"
+
+#: api/models.py:124
+msgid "assign to all members"
+msgstr "محول به همه اعضا"
+
+#: api/models.py:130
+msgid "User who created this job"
+msgstr "کاربری که این کار را ایجاد کرده"
+
+#: api/models.py:136
+msgid "job"
+msgstr "کار"
+
+#: api/models.py:137
+msgid "jobs"
+msgstr "کار‌ها"
+
+#: api/models.py:150
+msgid "Pending"
+msgstr "در انتظار"
+
+#: api/models.py:153
+msgid "Cancelled"
+msgstr "لغو شده"
+
+#: api/models.py:162 api/models.py:257
+msgid "team"
+msgstr "تیم"
+
+#: api/models.py:164
+msgid "paid tokens"
+msgstr "توکن‌های پرداخت شده"
+
+#: api/models.py:169
+msgid "task"
+msgstr "وظیفه"
+
+#: api/models.py:170
+msgid "tasks"
+msgstr "وظایف"
+
+#: api/models.py:183
+msgid "User Message"
+msgstr "پیام کاربر"
+
+#: api/models.py:184
+#, fuzzy
+#| msgid "AI Text Response"
+msgid "AI Response"
+msgstr "پاسخ متنی هوش مصنوعی"
+
+#: api/models.py:188
+msgid "Text Response"
+msgstr "پاسخ متنی"
+
+#: api/models.py:189
+msgid "Image Response"
+msgstr "پاسخ تصویری"
+
+#: api/models.py:203
+msgid "User who sent the message, null for AI responses"
+msgstr "کاربری که پیام را ارسال کرده، برای پاسخ‌های هوش مصنوعی خالی است"
+
+#: api/models.py:206
+msgid "message type"
+msgstr "نوع پیام"
+
+#: api/models.py:209
+msgid "response type"
+msgstr "نوع پاسخ"
+
+#: api/models.py:210
+msgid "Desired AI response type for user messages"
+msgstr "نوع پاسخ هوش مصنوعی مورد نظر برای پیام‌های کاربر"
+
+#: api/models.py:212
+msgid "content"
+msgstr "محتوا"
+
+#: api/models.py:212
+msgid "Message content or image prompt"
+msgstr "محتوای پیام یا درخواست تصویر"
+
+#: api/models.py:213
+msgid "image URL"
+msgstr "آدرس تصویر"
+
+#: api/models.py:213
+msgid "Generated image URL for AI image responses"
+msgstr "آدرس تصویر تولید شده برای پاسخ‌های تصویری هوش مصنوعی"
+
+#: api/models.py:217
+msgid "chat message"
+msgstr "پیام چت"
+
+#: api/models.py:218
+msgid "chat messages"
+msgstr "پیام‌های چت"
+
+#: api/models.py:240
+msgid "Organization this team belongs to"
+msgstr "سازمانی که این تیم به آن تعلق دارد"
+
+#: api/models.py:249
+msgid "Team manager who can manage team membership"
+msgstr "مدیر تیمی که می‌تواند عضویت تیم را مدیریت کند"
+
+#: api/models.py:253
+#, fuzzy
+#| msgid "Created"
+msgid "Creator"
+msgstr "ایجاد شد"
+
+#: api/models.py:254
+#, fuzzy
+#| msgid "Number"
+msgid "Members"
+msgstr "عدد"
+
+#: api/models.py:258
+msgid "teams"
+msgstr "تیم‌ها"
+
+#: api/permissions.py:137
+#, fuzzy
+#| msgid "Authentication required"
+msgid "Authentication required."
+msgstr "احراز هویت الزامی است"
+
+#: api/permissions.py:144
+#, fuzzy
+#| msgid "Only organization administrators can reset passwords"
+msgid ""
+"Only organization administrators can access team import/export operations."
+msgstr "فقط مدیران سازمان می‌توانند رمز عبورها را بازنشانی کنند"
+
+#: api/serializers.py:109
+msgid "Authentication required"
+msgstr "احراز هویت الزامی است"
+
+#: api/serializers.py:286
+msgid "assign_to_all cant be null when not sending any user for assigned_users"
+msgstr ""
+"وظیفه تنها میتواند برای تمام کاربران تیم یا برای برخی اشخاص یک تیم ارسال گردد"
+
+#: api/serializers.py:294
+msgid "At least one team must be specified"
+msgstr "حداقل یک تیم باید انتخاب شود."
+
+#: api/serializers.py:320
+msgid "Due date must be at least 1 day in the future."
+msgstr "مهلت انجام کار حداقل باید یک روز بعد تعیین گردد"
+
+#: api/serializers.py:329
+msgid "Start date must be at least 1 day in the future."
+msgstr "تاریخ ایجاد وظایف حداقل باید یک روز بعد تعیین گردد"
+
+#: api/tasks.py:41 api/tasks.py:61
+msgid "وظیفه جدید به شما محول شد"
+msgstr "وظیفه جدید به شما محول شد"
+
+#: api/tasks.py:42 api/tasks.py:62
+msgid "شما یک وظیفه جدید دریافت کردید: {}"
+msgstr "شما یک وظیفه جدید دریافت کردید: {}"
+
+#: api/views.py:79
+msgid "content_type and object_id are required"
+msgstr "content_type و object_id الزامی هستند"
+
+#: api/views.py:83
+msgid "Invalid content_type. Must be one of: {}"
+msgstr "نوع محتوا باید یکی از مقادیر {} باشد."
+
+#: api/views.py:92
+msgid "Object not found"
+msgstr "شیء یافت نشد"
+
+#: api/views.py:107
+msgid "You can only interact with tasks assigned to you"
+msgstr "شما فقط می‌توانید با وظایف محول شده به خود تعامل داشته باشید"
+
+#: api/views.py:121
+msgid "You don't have permission to interact with this job"
+msgstr "شما مجوز تعامل با این کار را ندارید"
+
+#: api/views.py:285
+#, fuzzy
+#| msgid "is required"
+msgid "Content is required"
+msgstr "الزامی است"
+
+#: api/views.py:328
+#, fuzzy
+#| msgid "Sorry, I could not generate an image at this time."
+msgid "Sorry, I could not generate a response at this time."
+msgstr "با عرض پوزش سیستم در حال حاضر قادر به ساخت تصویر نیست. "
+
+#: api/views.py:386
+#, fuzzy
+#| msgid "current_password is required"
+msgid "Content (prompt) is required"
+msgstr "رمز عبور فعلی الزامی است"
+
+#: api/views.py:443
+msgid "Sorry, I could not generate an image at this time."
+msgstr "با عرض پوزش سیستم در حال حاضر قادر به ساخت تصویر نیست. "
+
+#: api/views.py:598 api/views.py:682
+#, fuzzy
+#| msgid "You don't have permission to manage user settings"
+msgid "You do not have permission to add users to this team."
+msgstr "شما مجوز مدیریت کاربران تیم را ندارید"
+
+#: api/views.py:605 api/views.py:867
+#, fuzzy
+#| msgid "is required"
+msgid "user_id is required."
+msgstr "الزامی است"
+
+#: api/views.py:611 api/views.py:891
+#, fuzzy
+#| msgid "Object not found"
+msgid "User not found."
+msgstr "شیء یافت نشد"
+
+#: api/views.py:617
+msgid "User is already a member of this team."
+msgstr "این کاربر عضو تیم است."
+
+#: api/views.py:633 api/views.py:731
+msgid "به تیم اضافه شدید"
+msgstr ""
+
+#: api/views.py:634 api/views.py:732
+msgid "شما به تیم {} اضافه شدید."
+msgstr ""
+
+#: api/views.py:688
+msgid "user_ids must be a non-empty list."
+msgstr "وارد کردن آرایه ای از شناسه کاربران الزامی است."
+
+#: api/views.py:696
+#, fuzzy
+#| msgid "Object not found"
+msgid "Users not found: {}"
+msgstr "شیء یافت نشد"
+
+#: api/views.py:708
+msgid "All specified users are already members of this team."
+msgstr "تمام کاربران در حال حاضر عضو تیم هستند."
+
+#: api/views.py:740
+msgid "Successfully added {} users to the team."
+msgstr "کاربران {} با موفقیت به تیم اضافه شدند."
+
+#: api/views.py:817
+#, fuzzy
+#| msgid "You don't have permission to interact with this job"
+msgid "You do not have permission to view this team's members."
+msgstr "شما مجوز تعامل با این کار را ندارید"
+
+#: api/views.py:882
+#, fuzzy
+#| msgid "You don't have permission to manage user settings"
+msgid "You do not have permission to remove users from this team."
+msgstr "شما مجوز مدیریت تنظیمات کاربر را ندارید"
+
+#: api/views.py:910
+msgid "از تیم حذف شدید"
+msgstr ""
+
+#: api/views.py:911
+msgid "شما از تیم {} حدف شدید."
+msgstr ""
+
+#: api/views.py:1090
+#, fuzzy
+#| msgid "You don't have permission to interact with this job"
+msgid "You do not have permission to delete this job."
+msgstr "شما مجوز تعامل با این کار را ندارید"
+
+#: api/views.py:1188
+#, fuzzy
+#| msgid "You don't have permission to interact with this job"
+msgid "You do not have permission to update this task."
+msgstr "شما مجوز تعامل با این کار را ندارید"
+
+#: api/views.py:1227
+#, fuzzy
+#| msgid "You don't have permission to interact with this job"
+msgid "You do not have permission to delete this task."
+msgstr "شما مجوز تعامل با این کار را ندارید"
+
+#: api/views.py:1425
+#, fuzzy
+#| msgid "is required"
+msgid "Excel file is required."
+msgstr "الزامی است"
+
+#: api/views.py:1456
+msgid "Sheet is empty or has no data"
+msgstr "برگه خالی است و داده ای ندارد"
+
+#: api/views.py:1490
+#, fuzzy
+#| msgid "Unknown error."
+msgid "Unknown error"
+msgstr "خطای ناشناخته."
+
+#: api/views.py:1498 api/views.py:1722
+msgid "Processing error: {}"
+msgstr "خطای پردازش"
+
+#: api/views.py:1521
+#, fuzzy
+#| msgid "Error checking service health: {}"
+msgid "Error processing Excel file: {}"
+msgstr "خطا در پردازش فایل اکسل: {}"
+
+#: api/views.py:1580
+msgid "Access denied. Only system administrators can view AI service status."
+msgstr ""
+"دسترسی غیرمجاز. فقط ادمین‌های سیستم می‌توانند وضعیت سرویس AI را مشاهده کنند."
+
+#: api/views.py:1603
+msgid "Error checking AI service health"
+msgstr "خطا در بررسی سلامت سرویس AI"
+
+#: api/views.py:1623
+#, fuzzy
+#| msgid "Password must be at least 8 characters long"
+msgid "Team name is required and must be at least 4 characters long"
+msgstr "نام تیم باید حداقل 4 کاراکتر باشد."
+
+#: api/views.py:1630
+msgid "Team {} already exists in this organization"
+msgstr "تیم {} در سازمان شما موجود است."
+
+#: api/views.py:1640
+msgid "Manager username is required for team '{}'"
+msgstr "نام کاربری مدیر تیم '{}' الزامی است"
+
+#: api/views.py:1645
+#, fuzzy
+#| msgid "Password must be at least 8 characters long"
+msgid "Manager username must be at least 4 characters long for team '{}'"
+msgstr "نام کاربری {} باید حداقل 4 کاراکتر باشد"
+
+#: api/views.py:1688
+#, fuzzy
+#| msgid "is required"
+msgid "Member username is required"
+msgstr "نام کاربری الزامی است"
+
+#: api/views.py:1697
+#, fuzzy
+#| msgid "Password must be at least 8 characters long"
+msgid "Member username '{}' must be at least 4 characters long"
+msgstr "نام کاربری {} باید حداقل 4 کاراکتر باشد"
+
+#: api/views.py:1743
+msgid "Team processing error: {}"
+msgstr "خطا در پردازش تیم"
+
+#: core/base_exception.py:15
+msgid "unexpected server error"
+msgstr "خطای غیرمنتظره سرور"
+
+#: core/base_exception.py:49
+msgid "can`t delete because of dependency."
+msgstr "به دلیل وابستگی نمی‌توان حذف کرد."
+
+#: core/base_exception.py:65 core/base_exception.py:89
+msgid "validation error."
+msgstr "خطای اعتبارسنجی."
+
+#: core/base_exception.py:97
+msgid "Dosen`t gave required permissions."
+msgstr "مجوزهای مورد نیاز داده نشده."
+
+#: core/base_exception.py:108
+msgid "Unknown error."
+msgstr "خطای ناشناخته."
+
+#: core/base_exception.py:116
+msgid "Unexpeceted server error."
+msgstr "خطای غیرمنتظره سرور."
+
+#: core/validators.py:9
+#, fuzzy
+#| msgid "Password must be at least 6 characters long"
+msgid "Password must contain at least one letter."
+msgstr "رمز عبور باید حداقل شامل یک حرف باشد."
+
+#: core/validators.py:15
+#, fuzzy
+#| msgid "Password must be at least 6 characters long"
+msgid "Password must contain at least one number."
+msgstr "رمز عبور باید حداقل شامل یک عدد باشد."
+
+#: core/validators.py:21
+#, fuzzy
+#| msgid "Password must be at least 6 characters long"
+msgid "Password must contain number."
+msgstr "رمز عبور باید شامل عدد باشد."
+
+#: notification/models.py:16
+msgid "Information"
+msgstr "اطلاعات"
+
+#: notification/models.py:17
+msgid "Warning"
+msgstr "هشدار"
+
+#: notification/models.py:18
+msgid "Error"
+msgstr "خطا"
+
+#: notification/models.py:19
+msgid "Success"
+msgstr "موفقیت"
+
+#: notification/models.py:30
+msgid "message"
+msgstr "پیام"
+
+#: notification/models.py:32
+msgid "notification type"
+msgstr "نوع اعلان"
+
+#: notification/models.py:61
+msgid "scheduled at"
+msgstr "برنامه‌ریزی شده در"
+
+#: notification/models.py:62
+msgid "sent at"
+msgstr "ارسال شده در"
+
+#: notification/models.py:67
+msgid "notification"
+msgstr "اعلان"
+
+#: notification/models.py:68
+msgid "notifications"
+msgstr "اعلان‌ها"
+
+#: notification/models.py:99
+msgid "is read"
+msgstr "خوانده شده"
+
+#: notification/models.py:100
+msgid "read at"
+msgstr "خوانده شده در"
+
+#: notification/models.py:101
+msgid "is archived"
+msgstr "بایگانی شده"
+
+#: notification/models.py:106
+msgid "user notification"
+msgstr "اعلان کاربر"
+
+#: notification/models.py:107
+msgid "user notifications"
+msgstr "اعلان‌های کاربر"
+
+#: notification/models.py:134
+msgid "endpoint"
+msgstr "نقطه پایان"
+
+#: notification/models.py:135
+msgid "p256dh key"
+msgstr "کلید p256dh"
+
+#: notification/models.py:136
+msgid "auth key"
+msgstr "کلید احراز هویت"
+
+#: notification/models.py:138
+msgid "user agent"
+msgstr "عامل کاربر"
+
+#: notification/models.py:139
+msgid "is active"
+msgstr "فعال است"
+
+#: notification/models.py:142
+msgid "last used"
+msgstr "آخرین استفاده"
+
+#: notification/models.py:145
+msgid "push subscription"
+msgstr "اشتراک پوش"
+
+#: notification/models.py:146
+msgid "push subscriptions"
+msgstr "اشتراک‌های پوش"
+
+#: notification/models.py:173
+msgid "email enabled"
+msgstr "ایمیل فعال"
+
+#: notification/models.py:174
+msgid "push enabled"
+msgstr "پوش فعال"
+
+#: notification/models.py:175
+msgid "in-app enabled"
+msgstr "درون برنامه فعال"
+
+#: notification/models.py:178
+msgid "preferences"
+msgstr "ترجیحات"
+
+#: notification/models.py:179
+msgid ""
+"JSON object with notification type preferences, e.g., {\"task_assigned\": "
+"{\"email\": true, \"push\": false}}"
+msgstr ""
+"شیء JSON با ترجیحات نوع اعلان، مثلاً {\"task_assigned\": {\"email\": true, "
+"\"push\": false}}"
+
+#: notification/models.py:186
+msgid "notification preference"
+msgstr "ترجیح اعلان"
+
+#: notification/models.py:187
+msgid "notification preferences"
+msgstr "ترجیحات اعلان"
+
+#: settings/admin.py:51
+msgid "Configuration"
+msgstr "پیکربندی"
+
+#: settings/admin.py:54
+msgid "Validation"
+msgstr "اعتبارسنجی"
+
+#: settings/admin.py:83
+msgid "Value"
+msgstr "مقدار"
+
+#: settings/admin.py:86
+msgid "Metadata"
+msgstr "متاداده"
+
+#: settings/admin.py:99
+msgid "Setting"
+msgstr "تنظیم"
+
+#: settings/admin.py:104 settings/models.py:287
+msgid "Global"
+msgstr "عمومی"
+
+#: settings/admin.py:110
+msgid "Scope"
+msgstr "دامنه"
+
+#: settings/models.py:14
+msgid "order"
+msgstr "ترتیب"
+
+#: settings/models.py:14
+msgid "Display order"
+msgstr "ترتیب نمایش"
+
+#: settings/models.py:19
+msgid "setting category"
+msgstr "دسته تنظیم"
+
+#: settings/models.py:20
+msgid "setting categories"
+msgstr "دسته‌های تنظیم"
+
+#: settings/models.py:32
+msgid "String"
+msgstr "رشته"
+
+#: settings/models.py:33
+msgid "Number"
+msgstr "عدد"
+
+#: settings/models.py:34
+msgid "Boolean"
+msgstr "بولی"
+
+#: settings/models.py:35
+msgid "JSON"
+msgstr "JSON"
+
+#: settings/models.py:36
+msgid "Choice"
+msgstr "انتخاب"
+
+#: settings/models.py:44
+msgid "key"
+msgstr "کلید"
+
+#: settings/models.py:44
+msgid "Machine-readable key"
+msgstr "کلید قابل خواندن توسط ماشین"
+
+#: settings/models.py:45
+msgid "Human-readable name"
+msgstr "نام قابل خواندن توسط انسان"
+
+#: settings/models.py:48
+msgid "data type"
+msgstr "نوع داده"
+
+#: settings/models.py:53
+msgid "default value"
+msgstr "مقدار پیش‌فرض"
+
+#: settings/models.py:54
+msgid "is required"
+msgstr "الزامی است"
+
+#: settings/models.py:56
+msgid "validation rules"
+msgstr "قوانین اعتبارسنجی"
+
+#: settings/models.py:59
+msgid "JSON object with validation rules (min, max, choices, regex, etc.)"
+msgstr "شیء JSON با قوانین اعتبارسنجی (حداقل، حداکثر، انتخاب‌ها، regex و غیره)"
+
+#: settings/models.py:65
+msgid "setting definition"
+msgstr "تعریف تنظیم"
+
+#: settings/models.py:66
+msgid "setting definitions"
+msgstr "تعاریف تنظیم"
+
+#: settings/models.py:288
+msgid "Organization"
+msgstr "سازمان"
+
+#: settings/models.py:289
+msgid "User"
+msgstr "کاربر"
+
+#: settings/models.py:298
+msgid "scope type"
+msgstr "نوع دامنه"
+
+#: settings/models.py:303
+msgid "scope id"
+msgstr "شناسه دامنه"
+
+#: settings/models.py:306
+msgid "ID of the scoped object (null for global)"
+msgstr "شناسه شیء دارای دامنه (خالی برای عمومی)"
+
+#: settings/models.py:308
+msgid "value"
+msgstr "مقدار"
+
+#: settings/models.py:322
+msgid "setting value"
+msgstr "مقدار تنظیم"
+
+#: settings/models.py:323
+msgid "setting values"
+msgstr "مقادیر تنظیم"
+
+#: settings/serializers.py:91
+msgid "Invalid setting definition"
+msgstr "تعریف تنظیم نامعتبر"
+
+#: settings/serializers.py:99
+msgid "Value must be a string"
+msgstr "مقدار باید یک رشته باشد"
+
+#: settings/serializers.py:104
+msgid "Value must be a number"
+msgstr "مقدار باید یک عدد باشد"
+
+#: settings/serializers.py:107
+msgid "Value must be a boolean"
+msgstr "مقدار باید یک بولی باشد"
+
+#: settings/serializers.py:113
+msgid "Choice value must be a string"
+msgstr "مقدار انتخاب باید یک رشته باشد"
+
+#: settings/serializers.py:122
+#, python-brace-format
+msgid "Value must be at least {min_val}"
+msgstr "مقدار باید حداقل {min_val} باشد"
+
+#: settings/serializers.py:126
+#, python-brace-format
+msgid "Value must be at most {max_val}"
+msgstr "مقدار باید حداکثر {max_val} باشد"
+
+#: settings/serializers.py:130
+#, python-brace-format
+msgid "Value must be one of: {choices}"
+msgstr "مقدار باید یکی از موارد زیر باشد: {choices}"
+
+#: settings/serializers.py:135
+msgid "Value does not match required pattern"
+msgstr "مقدار با الگوی مورد نیاز مطابقت ندارد"
+
+#: settings/serializers.py:148
+msgid "You don't have permission to manage global settings"
+msgstr "شما مجوز مدیریت تنظیمات عمومی را ندارید"
+
+#: settings/serializers.py:151
+msgid "You don't have permission to manage organization settings"
+msgstr "شما مجوز مدیریت تنظیمات سازمان را ندارید"
+
+#: settings/serializers.py:155
+msgid "You can only manage settings for your own organization"
+msgstr "شما فقط می‌توانید تنظیمات سازمان خود را مدیریت کنید"
+
+#: settings/serializers.py:158
+msgid "You don't have permission to manage user settings"
+msgstr "شما مجوز مدیریت تنظیمات کاربر را ندارید"
+
+#: settings/serializers.py:161
+msgid "You can only manage your own settings"
+msgstr "شما فقط می‌توانید تنظیمات خود را مدیریت کنید"
+
+#: templates/admin/base.html:12
+msgid "Site administration"
+msgstr "مدیریت سایت"
+
+#, fuzzy
+#~| msgid "Password must be at least 6 characters long"
+#~ msgid "Password must contain at least one uppercase letter."
+#~ msgstr "رمز عبور باید حداقل ۶ کاراکتر باشد"
+
+#, fuzzy
+#~| msgid "Password must be at least 6 characters long"
+#~ msgid "Password must contain at least one lowercase letter."
+#~ msgstr "رمز عبور باید حداقل ۶ کاراکتر باشد"
+
+#, fuzzy
+#~| msgid "Password must be at least 6 characters long"
+#~ msgid "Password must contain at least one special character."
+#~ msgstr "رمز عبور باید حداقل ۶ کاراکتر باشد"
+
+#~ msgid ""
+#~ "Password must contain uppercase, lowercase, number and special character."
+#~ msgstr "رمز عبور باید شامل حروف بزرگ، کوچک، عدد و علائم خاص باشد"
+
+#, fuzzy
+#~| msgid "Created"
+#~ msgid "Created Teams"
+#~ msgstr "ایجاد شد"
+
+#~ msgid "No {} matches the given query."
+#~ msgstr "موجودیتی با این مشخصات یافت نشد"
+
+msgid "Nothing matches the given URI"
+msgstr "مسیری منطبق با این درخواست یافت نشد."

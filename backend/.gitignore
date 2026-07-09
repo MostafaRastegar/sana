@@ -1,0 +1,6 @@
+.venv
+venv
+*.pyc
+team_backend.egg-info
+frontend
+test_output*

@@ -1,0 +1,152 @@
+[project]
+name = "team-backend"
+version = "1.0.0"
+description = "Production-ready Django REST Framework application"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+  {name = "Team Backend Team"},
+]
+keywords = ["django", "rest-api", "drf", "production"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Django",
+    "Framework :: Django :: 5.2.9",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "django==5.2.9",
+    "djangorestframework==3.16.0",
+    "django-filter==25.1",
+    "drf-spectacular==0.27.2",
+    "drf-spectacular-sidecar",
+    "djangorestframework-simplejwt==5.5.0",
+    "psycopg2-binary==2.9.11",
+    "psycopg[binary, pool]==3.2.13",
+    "django-cors-headers==4.7.0",
+    "pillow==11.0.0",
+    "gunicorn==23.0.0",
+    "redis==6.1.0",
+    "celery==5.5.2",
+    "django-celery-beat==2.8.1",
+    "django-celery-results==2.6.0",
+    "elastic-apm==6.18.0",
+    "pywebpush==1.14.0",
+    "openai==2.14.0",
+    "django-environ==0.12.0",
+    "whitenoise>=6.11.0",
+    "django-import-export==4.1.0",
+    "django-storages==1.14.6",
+    "boto3==1.38.23",
+    "botocore==1.38.23",
+    "gevent>=25.9.1",
+    "numpy==2.2.6",
+    "openpyxl==3.1.5",
+    "pandas==2.2.3",
+    "xlsxwriter>=3.2.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black==24.1.1",
+    "isort==5.13.2",
+    "pylint==3.0.3",
+    "mypy==1.7.1",
+]
+test = [
+    "pytest==7.4.3",
+    "pytest-django==4.8.0",
+    "pytest-cov==4.1.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+# Explicitly include only the Python packages we want
+include = ["core", "accounts", "management", "datasets", "charts", "dashboards", "query"]
+exclude = ["media", "static", "staticfiles", "private_media", "tests", "migrations"]
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  migrations/
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["core", "accounts", "api"]
+skip = ["migrations", "venv", "env"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "drf_spectacular.*",
+    "rest_framework.*",
+]
+ignore_missing_imports = true
+
+[tool.pylint.MASTER]
+load-plugins = []
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = [
+    "missing-docstring",
+    "invalid-name",
+    "too-few-public-methods",
+    "too-many-arguments",
+    "too-many-locals",
+    "too-many-statements",
+    "duplicate-code",
+]
+
+[tool.pylint.FORMAT]
+max-line-length = 88
+
+[tool.pylint.IMPORTS]
+preferred-modules = [
+    "django:django",
+    "rest_framework:rest_framework",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.development"
+addopts = "-v --tb=short --cov=core --cov=accounts --cov=api --cov-report=html --cov-report=term-missing"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_tests.py"]
+python_classes = ["Test*", "*Tests"]
+python_functions = ["test_*"]
+
+[tool.coverage.run]
+source = ["core", "accounts", "api"]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "*/test_*",
+    "manage.py",
+]
+

@@ -1,0 +1,110 @@
+services:
+  db:
+    image: cache.damavand.ir/docker/postgres:15-alpine
+    env_file: .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5532:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U team_user -d team_backend"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: cache.damavand.ir/docker/redis:7-alpine
+    ports:
+      - "6479:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  web:
+    build: .
+    image: nader.damavand.ir/contech/buzz/backend:$VERSION
+    env_file: .env
+    volumes:
+      - static:/app/static
+      - media:/app/media
+      - private_media:/app/private_media
+    ports:
+      - "9000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      # seeder:
+      #   condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  sse-service:
+    build:
+      context: ../../fastapi/sse
+    env_file: .env
+    container_name: sse-service
+    restart: unless-stopped
+    ports:
+      - "9002:8001"
+    depends_on:
+      - db
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+
+  celery_worker:
+    image: nader.damavand.ir/contech/buzz/backend:$VERSION
+    env_file: .env
+    command: python -m celery -A damavand worker -B -l debug -E --hostname=app-worker@%h
+    depends_on:
+      - db
+      - redis
+      - web
+    healthcheck:
+      test: ["CMD", "celery", "-A", "damavand", "inspect", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  celery_beat:
+    image: nader.damavand.ir/contech/buzz/backend:$VERSION
+    env_file: .env
+    command: python -m celery -A damavand beat -l debug --scheduler django_celery_beat.schedulers:DatabaseScheduler --pidfile=/tmp/celerybeat.pid
+    depends_on:
+      - db
+      - redis
+      - web
+
+  # seeder:
+  #   build: .
+  #   image: nader.damavand.ir/contech/buzz/backend:$VERSION
+  #   env_file: .env
+  #   command: sh -c "python manage.py migrate && python manage.py seed_demo_data && python manage.py run_e2e_tests"
+  #   environment:
+  #     - SEED_DEMO_DATA=true
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+
+volumes:
+  static:
+  media:
+  private_media:
+  postgres_data:
+  redis_data:

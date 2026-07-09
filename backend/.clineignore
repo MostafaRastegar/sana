@@ -1,0 +1,3 @@
+.venv
+team_backend.*
+uv.lock

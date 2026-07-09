@@ -1,0 +1,205 @@
+from rest_framework import viewsets, status, filters
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django.db import connection
+from django.db.models import Count, Sum, Avg, Min, Max
+from core.permissions import ModelActionPermission
+from core.utils.pagination import CustomPagination
+from core.base_exception import DmvnException
+from .models import Chart, SavedQuery
+from .serializers import ChartSerializer, ChartDataSerializer, SavedQuerySerializer
+
+
+class ChartViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Chart model.
+    Provides CRUD operations plus a `data` action that computes
+    chart data by applying the chart config to the dataset's table.
+    """
+
+    queryset = Chart.objects.select_related("dataset", "created_by").all()
+    serializer_class = ChartSerializer
+    permission_classes = [ModelActionPermission]
+    pagination_class = CustomPagination
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["name", "description"]
+    ordering_fields = ["name", "created_at"]
+    ordering = ["-created_at"]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        dataset_id = self.request.query_params.get("dataset_id", None)
+        if dataset_id:
+            queryset = queryset.filter(dataset_id=dataset_id)
+        chart_type = self.request.query_params.get("chart_type", None)
+        if chart_type:
+            queryset = queryset.filter(chart_type=chart_type)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    def _build_chart_sql(self, config, table_name):
+        """Build a SQL query from chart config for a given table."""
+        x_axis = config.get("xAxis") or config.get("x_axis")
+        y_axis = config.get("yAxis") or config.get("y_axis")
+        group_by = config.get("groupBy") or config.get("group_by")
+        aggregate = config.get("aggregate", "none")
+        limit = config.get("limit")
+        sort_config = config.get("sort")
+        filters_config = config.get("filters", [])
+
+        if not x_axis or not y_axis:
+            raise DmvnException(
+                "x_axis and y_axis are required in chart config.",
+                status_code=400,
+                code="bad_request",
+            )
+
+        if aggregate and aggregate != "none":
+            agg_func = {
+                "sum": "SUM",
+                "avg": "AVG",
+                "count": "COUNT",
+                "min": "MIN",
+                "max": "MAX",
+            }.get(aggregate, "SUM")
+
+            select_cols = [f'"{x_axis}"']
+            group_cols = [f'"{x_axis}"']
+
+            if group_by:
+                select_cols.append(f'"{group_by}"')
+                group_cols.append(f'"{group_by}"')
+
+            select_cols.append(f'{agg_func}("{y_axis}") as "{y_axis}"')
+            sql = f'SELECT {", ".join(select_cols)} FROM "{table_name}"'
+        else:
+            sql = f'SELECT * FROM "{table_name}"'
+
+        where_clauses = []
+        params = []
+        for f in filters_config:
+            col = f.get("column")
+            op = f.get("operator", "eq")
+            val = f.get("value")
+            if not col:
+                continue
+            if op == "eq":
+                where_clauses.append(f'"{col}" = %s')
+                params.append(val)
+            elif op == "neq":
+                where_clauses.append(f'"{col}" != %s')
+                params.append(val)
+            elif op == "gt":
+                where_clauses.append(f'"{col}" > %s')
+                params.append(val)
+            elif op == "gte":
+                where_clauses.append(f'"{col}" >= %s')
+                params.append(val)
+            elif op == "lt":
+                where_clauses.append(f'"{col}" < %s')
+                params.append(val)
+            elif op == "lte":
+                where_clauses.append(f'"{col}" <= %s')
+                params.append(val)
+            elif op == "contains":
+                where_clauses.append(f'"{col}" LIKE %s')
+                params.append(f"%{val}%")
+            elif op == "in" and isinstance(val, list):
+                placeholders = ", ".join(["%s"] * len(val))
+                where_clauses.append(f'"{col}" IN ({placeholders})')
+                params.extend(val)
+
+        if where_clauses:
+            sql += " WHERE " + " AND ".join(where_clauses)
+
+        if aggregate and aggregate != "none":
+            sql += f' GROUP BY {", ".join(group_cols)}'
+
+        if sort_config:
+            col = sort_config.get("column", x_axis)
+            direction = sort_config.get("direction", "asc")
+            sql += f' ORDER BY "{col}" {direction.upper()}'
+        elif aggregate and aggregate != "none":
+            sql += f' ORDER BY "{y_axis}" DESC'
+
+        if limit:
+            sql += f" LIMIT {int(limit)}"
+
+        return sql, params
+
+    def _execute_chart_sql(self, sql, params, chart_type, config):
+        """Execute SQL and return serialized chart data."""
+        with connection.cursor() as cursor:
+            cursor.execute(sql, params)
+            columns = [col[0] for col in cursor.description]
+            rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        col_meta = [{"name": col, "type": "string", "label": col} for col in columns]
+
+        serializer = ChartDataSerializer(
+            instance={
+                "columns": col_meta,
+                "rows": rows,
+                "chart_type": chart_type,
+                "config": config,
+            }
+        )
+        return serializer.data
+
+    @action(detail=True, methods=["get"])
+    def data(self, request, pk=None):
+        """Compute chart data for a saved chart."""
+        chart = self.get_object()
+        dataset = chart.dataset
+        table_name = dataset.table_name
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name=%s",
+                [table_name],
+            )
+            if not cursor.fetchone():
+                raise DmvnException(
+                    f"Table '{table_name}' does not exist.",
+                    status_code=404,
+                    code="table_not_found",
+                )
+
+        sql, params = self._build_chart_sql(chart.config, table_name)
+        return Response(self._execute_chart_sql(sql, params, chart.chart_type, chart.config))
+
+    @action(detail=False, methods=["post"])
+    def preview(self, request):
+        """Compute chart data without saving a chart (preview mode)."""
+        dataset_id = request.data.get("dataset")
+        config = request.data.get("config")
+        chart_type = request.data.get("chart_type", "bar")
+
+        if not dataset_id or not config:
+            raise DmvnException(
+                "dataset and config are required.", status_code=400, code="bad_request"
+            )
+
+        from datasets.models import Dataset
+        try:
+            dataset = Dataset.objects.get(id=dataset_id)
+        except Dataset.DoesNotExist:
+            raise DmvnException("Dataset not found.", status_code=404, code="not_found")
+
+        table_name = dataset.table_name
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name=%s",
+                [table_name],
+            )
+            if not cursor.fetchone():
+                raise DmvnException(
+                    f"Table '{table_name}' does not exist.",
+                    status_code=404,
+                    code="table_not_found",
+                )
+
+        sql, params = self._build_chart_sql(config, table_name)
+        return Response(self._execute_chart_sql(sql, params, chart_type, config))

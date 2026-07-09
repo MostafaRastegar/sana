@@ -1,0 +1,785 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-20 15:14+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: accounts/admin.py:54
+msgid "Personal info"
+msgstr ""
+
+#: accounts/admin.py:55
+msgid "Permissions"
+msgstr ""
+
+#: accounts/admin.py:58
+msgid "Important dates"
+msgstr ""
+
+#: accounts/admin.py:76
+msgid "Password changed successfully."
+msgstr ""
+
+#: accounts/admin.py:82
+#, python-format
+msgid "Change password: %(name)s"
+msgstr ""
+
+#: accounts/admin.py:82
+msgid "Change password"
+msgstr ""
+
+#: accounts/models.py:19
+msgid "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+msgstr ""
+
+#: accounts/models.py:22
+msgid "A user with that username already exists."
+msgstr ""
+
+#: accounts/models.py:25
+msgid "first name"
+msgstr ""
+
+#: accounts/models.py:26
+msgid "last name"
+msgstr ""
+
+#: accounts/models.py:27
+msgid "email address"
+msgstr ""
+
+#: accounts/models.py:29
+msgid "staff status"
+msgstr ""
+
+#: accounts/models.py:31
+msgid "Designates whether the user can log into this admin site."
+msgstr ""
+
+#: accounts/models.py:34
+msgid "active"
+msgstr ""
+
+#: accounts/models.py:37
+msgid ""
+"Designates whether this user should be treated as active. Unselect this "
+"instead of deleting accounts."
+msgstr ""
+
+#: accounts/models.py:41
+msgid "date joined"
+msgstr ""
+
+#: accounts/models.py:48
+msgid "User's organization"
+msgstr ""
+
+#: accounts/models.py:57
+msgid "user"
+msgstr ""
+
+#: accounts/models.py:58
+msgid "users"
+msgstr ""
+
+#: accounts/models.py:97
+msgid "Organization this permission group belongs to"
+msgstr ""
+
+#: accounts/models.py:99 api/models.py:105 api/models.py:158
+#: settings/models.py:13 settings/models.py:46
+msgid "description"
+msgstr ""
+
+#: accounts/models.py:104
+msgid "permission group"
+msgstr ""
+
+#: accounts/models.py:105
+msgid "permission groups"
+msgstr ""
+
+#: accounts/models.py:119 api/models.py:16 api/models.py:42 api/models.py:227
+#: settings/models.py:12 settings/models.py:45
+msgid "name"
+msgstr ""
+
+#: accounts/models.py:120 api/models.py:228
+msgid "display name"
+msgstr ""
+
+#: accounts/models.py:125
+msgid "Organization this group belongs to"
+msgstr ""
+
+#: accounts/models.py:133
+msgid "Group manager who can add users to the group"
+msgstr ""
+
+#: accounts/models.py:139
+msgid "group"
+msgstr ""
+
+#: accounts/models.py:140
+msgid "groups"
+msgstr ""
+
+#: accounts/models.py:159
+msgid "Member"
+msgstr ""
+
+#: accounts/models.py:160
+msgid "Administrator"
+msgstr ""
+
+#: accounts/models.py:161
+msgid "Moderator"
+msgstr ""
+
+#: accounts/models.py:162
+msgid "Viewer"
+msgstr ""
+
+#: accounts/models.py:176
+msgid "role"
+msgstr ""
+
+#: accounts/models.py:184
+msgid "user group"
+msgstr ""
+
+#: accounts/models.py:185
+msgid "user groups"
+msgstr ""
+
+#: activity_log/admin.py:24
+msgid "Content Type"
+msgstr ""
+
+#: activity_log/admin.py:29
+msgid "Object"
+msgstr ""
+
+#: activity_log/models.py:15
+msgid "Created"
+msgstr ""
+
+#: activity_log/models.py:16
+msgid "Updated"
+msgstr ""
+
+#: activity_log/models.py:17
+msgid "Deleted"
+msgstr ""
+
+#: activity_log/models.py:18 api/models.py:148
+msgid "Completed"
+msgstr ""
+
+#: activity_log/models.py:19
+msgid "Started"
+msgstr ""
+
+#: activity_log/models.py:20
+msgid "Paused"
+msgstr ""
+
+#: activity_log/models.py:28 api/models.py:114 api/models.py:156
+msgid "status"
+msgstr ""
+
+#: activity_log/models.py:32
+msgid "additional data"
+msgstr ""
+
+#: activity_log/models.py:43
+msgid "activity log"
+msgstr ""
+
+#: activity_log/models.py:44
+msgid "activity logs"
+msgstr ""
+
+#: activity_log/serializers.py:55
+msgid "System"
+msgstr ""
+
+#: activity_log/serializers.py:62
+msgid "{} created {}"
+msgstr ""
+
+#: activity_log/serializers.py:64
+msgid "{} updated {}"
+msgstr ""
+
+#: activity_log/serializers.py:66
+msgid "{} deleted {}"
+msgstr ""
+
+#: activity_log/serializers.py:68
+msgid "{} completed {}"
+msgstr ""
+
+#: activity_log/serializers.py:70
+msgid "{} started {}"
+msgstr ""
+
+#: activity_log/serializers.py:72
+msgid "{} paused {}"
+msgstr ""
+
+#: activity_log/serializers.py:74
+msgid "{} performed {} on {}"
+msgstr ""
+
+#: api/admin.py:25
+msgid "Groups"
+msgstr ""
+
+#: api/admin.py:29
+msgid "Users"
+msgstr ""
+
+#: api/admin.py:47
+msgid "Job Types"
+msgstr ""
+
+#: api/admin.py:65
+msgid "Jobs"
+msgstr ""
+
+#: api/admin.py:92 settings/admin.py:33
+msgid "Settings"
+msgstr ""
+
+#: api/admin.py:95
+msgid "AI Features"
+msgstr ""
+
+#: api/admin.py:98 settings/admin.py:58
+msgid "Timestamps"
+msgstr ""
+
+#: api/admin.py:125
+msgid "Job"
+msgstr ""
+
+#: api/models.py:23
+msgid "Organization manager"
+msgstr ""
+
+#: api/models.py:29
+msgid "organization"
+msgstr ""
+
+#: api/models.py:30
+msgid "organizations"
+msgstr ""
+
+#: api/models.py:43 api/models.py:67
+msgid "icon"
+msgstr ""
+
+#: api/models.py:48
+msgid "platform"
+msgstr ""
+
+#: api/models.py:49
+msgid "platforms"
+msgstr ""
+
+#: api/models.py:61 api/models.py:102 notification/models.py:29
+msgid "title"
+msgstr ""
+
+#: api/models.py:63
+msgid "regex pattern"
+msgstr ""
+
+#: api/models.py:65
+msgid "Invalid regex pattern"
+msgstr ""
+
+#: api/models.py:75
+msgid "job type"
+msgstr ""
+
+#: api/models.py:76
+msgid "job types"
+msgstr ""
+
+#: api/models.py:90 notification/models.py:23
+msgid "Low"
+msgstr ""
+
+#: api/models.py:91 notification/models.py:24
+msgid "Medium"
+msgstr ""
+
+#: api/models.py:92 notification/models.py:25
+msgid "High"
+msgstr ""
+
+#: api/models.py:93 notification/models.py:26
+msgid "Urgent"
+msgstr ""
+
+#: api/models.py:97
+msgid "Scheduled"
+msgstr ""
+
+#: api/models.py:98 api/models.py:147
+msgid "In Progress"
+msgstr ""
+
+#: api/models.py:99
+msgid "Done"
+msgstr ""
+
+#: api/models.py:107 notification/models.py:38
+msgid "priority"
+msgstr ""
+
+#: api/models.py:109
+msgid "available tokens"
+msgstr ""
+
+#: api/models.py:110 api/models.py:154
+msgid "due date"
+msgstr ""
+
+#: api/models.py:111
+msgid "start date"
+msgstr ""
+
+#: api/models.py:112
+msgid "link"
+msgstr ""
+
+#: api/models.py:116
+msgid "AI text enabled"
+msgstr ""
+
+#: api/models.py:117
+msgid "AI image enabled"
+msgstr ""
+
+#: api/models.py:118
+msgid "suggested file"
+msgstr ""
+
+#: api/models.py:119
+msgid "suggested text"
+msgstr ""
+
+#: api/models.py:120
+msgid "operational"
+msgstr ""
+
+#: api/models.py:121
+msgid "assign to all members"
+msgstr ""
+
+#: api/models.py:126
+msgid "User who created this job"
+msgstr ""
+
+#: api/models.py:132
+msgid "job"
+msgstr ""
+
+#: api/models.py:133
+msgid "jobs"
+msgstr ""
+
+#: api/models.py:146
+msgid "Pending"
+msgstr ""
+
+#: api/models.py:149
+msgid "Cancelled"
+msgstr ""
+
+#: api/models.py:159
+msgid "paid tokens"
+msgstr ""
+
+#: api/models.py:164
+msgid "task"
+msgstr ""
+
+#: api/models.py:165
+msgid "tasks"
+msgstr ""
+
+#: api/models.py:178
+msgid "User Message"
+msgstr ""
+
+#: api/models.py:179
+msgid "AI Text Response"
+msgstr ""
+
+#: api/models.py:180
+msgid "AI Image Response"
+msgstr ""
+
+#: api/models.py:184
+msgid "Text Response"
+msgstr ""
+
+#: api/models.py:185
+msgid "Image Response"
+msgstr ""
+
+#: api/models.py:195
+msgid "User who sent the message, null for AI responses"
+msgstr ""
+
+#: api/models.py:198
+msgid "message type"
+msgstr ""
+
+#: api/models.py:201
+msgid "response type"
+msgstr ""
+
+#: api/models.py:202
+msgid "Desired AI response type for user messages"
+msgstr ""
+
+#: api/models.py:204
+msgid "content"
+msgstr ""
+
+#: api/models.py:204
+msgid "Message content or image prompt"
+msgstr ""
+
+#: api/models.py:205
+msgid "image URL"
+msgstr ""
+
+#: api/models.py:205
+msgid "Generated image URL for AI image responses"
+msgstr ""
+
+#: api/models.py:209
+msgid "task chat message"
+msgstr ""
+
+#: api/models.py:210
+msgid "task chat messages"
+msgstr ""
+
+#: api/models.py:233
+msgid "Organization this team belongs to"
+msgstr ""
+
+#: api/models.py:241
+msgid "Team manager who can manage team membership"
+msgstr ""
+
+#: api/models.py:247
+msgid "team"
+msgstr ""
+
+#: api/models.py:248
+msgid "teams"
+msgstr ""
+
+#: api/models.py:274
+msgid "team membership"
+msgstr ""
+
+#: api/models.py:275
+msgid "team memberships"
+msgstr ""
+
+#: api/tasks.py:44 api/views.py:466
+msgid "وظیفه جدید به شما محول شد"
+msgstr ""
+
+#: api/tasks.py:45 api/views.py:467
+msgid "شما یک وظیفه جدید دریافت کردید: {}"
+msgstr ""
+
+#: api/views.py:298
+msgid "به تیم اضافه شدید"
+msgstr ""
+
+#: api/views.py:299
+msgid "شما به تیم {} اضافه شدید"
+msgstr ""
+
+#: notification/models.py:16
+msgid "Information"
+msgstr ""
+
+#: notification/models.py:17
+msgid "Warning"
+msgstr ""
+
+#: notification/models.py:18
+msgid "Error"
+msgstr ""
+
+#: notification/models.py:19
+msgid "Success"
+msgstr ""
+
+#: notification/models.py:30
+msgid "message"
+msgstr ""
+
+#: notification/models.py:32
+msgid "notification type"
+msgstr ""
+
+#: notification/models.py:61
+msgid "scheduled at"
+msgstr ""
+
+#: notification/models.py:62
+msgid "sent at"
+msgstr ""
+
+#: notification/models.py:67
+msgid "notification"
+msgstr ""
+
+#: notification/models.py:68
+msgid "notifications"
+msgstr ""
+
+#: notification/models.py:99
+msgid "is read"
+msgstr ""
+
+#: notification/models.py:100
+msgid "read at"
+msgstr ""
+
+#: notification/models.py:101
+msgid "is archived"
+msgstr ""
+
+#: notification/models.py:106
+msgid "user notification"
+msgstr ""
+
+#: notification/models.py:107
+msgid "user notifications"
+msgstr ""
+
+#: notification/models.py:134
+msgid "endpoint"
+msgstr ""
+
+#: notification/models.py:135
+msgid "p256dh key"
+msgstr ""
+
+#: notification/models.py:136
+msgid "auth key"
+msgstr ""
+
+#: notification/models.py:138
+msgid "user agent"
+msgstr ""
+
+#: notification/models.py:139
+msgid "is active"
+msgstr ""
+
+#: notification/models.py:142
+msgid "last used"
+msgstr ""
+
+#: notification/models.py:145
+msgid "push subscription"
+msgstr ""
+
+#: notification/models.py:146
+msgid "push subscriptions"
+msgstr ""
+
+#: notification/models.py:173
+msgid "email enabled"
+msgstr ""
+
+#: notification/models.py:174
+msgid "push enabled"
+msgstr ""
+
+#: notification/models.py:175
+msgid "in-app enabled"
+msgstr ""
+
+#: notification/models.py:178
+msgid "preferences"
+msgstr ""
+
+#: notification/models.py:179
+msgid ""
+"JSON object with notification type preferences, e.g., {\"task_assigned\": "
+"{\"email\": true, \"push\": false}}"
+msgstr ""
+
+#: notification/models.py:186
+msgid "notification preference"
+msgstr ""
+
+#: notification/models.py:187
+msgid "notification preferences"
+msgstr ""
+
+#: settings/admin.py:51
+msgid "Configuration"
+msgstr ""
+
+#: settings/admin.py:54
+msgid "Validation"
+msgstr ""
+
+#: settings/admin.py:83
+msgid "Value"
+msgstr ""
+
+#: settings/admin.py:86
+msgid "Metadata"
+msgstr ""
+
+#: settings/admin.py:99
+msgid "Setting"
+msgstr ""
+
+#: settings/admin.py:104 settings/models.py:195
+msgid "Global"
+msgstr ""
+
+#: settings/admin.py:110
+msgid "Scope"
+msgstr ""
+
+#: settings/models.py:14
+msgid "order"
+msgstr ""
+
+#: settings/models.py:14
+msgid "Display order"
+msgstr ""
+
+#: settings/models.py:19
+msgid "setting category"
+msgstr ""
+
+#: settings/models.py:20
+msgid "setting categories"
+msgstr ""
+
+#: settings/models.py:32
+msgid "String"
+msgstr ""
+
+#: settings/models.py:33
+msgid "Number"
+msgstr ""
+
+#: settings/models.py:34
+msgid "Boolean"
+msgstr ""
+
+#: settings/models.py:35
+msgid "JSON"
+msgstr ""
+
+#: settings/models.py:36
+msgid "Choice"
+msgstr ""
+
+#: settings/models.py:44
+msgid "key"
+msgstr ""
+
+#: settings/models.py:44
+msgid "Machine-readable key"
+msgstr ""
+
+#: settings/models.py:45
+msgid "Human-readable name"
+msgstr ""
+
+#: settings/models.py:48
+msgid "data type"
+msgstr ""
+
+#: settings/models.py:53
+msgid "default value"
+msgstr ""
+
+#: settings/models.py:54
+msgid "is required"
+msgstr ""
+
+#: settings/models.py:56
+msgid "validation rules"
+msgstr ""
+
+#: settings/models.py:59
+msgid "JSON object with validation rules (min, max, choices, regex, etc.)"
+msgstr ""
+
+#: settings/models.py:65
+msgid "setting definition"
+msgstr ""
+
+#: settings/models.py:66
+msgid "setting definitions"
+msgstr ""
+
+#: settings/models.py:196
+msgid "Organization"
+msgstr ""
+
+#: settings/models.py:197
+msgid "User"
+msgstr ""
+
+#: settings/models.py:206
+msgid "scope type"
+msgstr ""
+
+#: settings/models.py:211
+msgid "scope id"
+msgstr ""
+
+#: settings/models.py:214
+msgid "ID of the scoped object (null for global)"
+msgstr ""
+
+#: settings/models.py:216
+msgid "value"
+msgstr ""
+
+#: settings/models.py:230
+msgid "setting value"
+msgstr ""
+
+#: settings/models.py:231
+msgid "setting values"
+msgstr ""
