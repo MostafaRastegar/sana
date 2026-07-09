@@ -1,14 +1,17 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Spin, Alert, Button, Modal, Select, message } from "antd";
-import { EditOutlined, PlusOutlined, SaveOutlined } from "@ant-design/icons";
+import { EditOutlined, PlusOutlined, SaveOutlined, FilterOutlined } from "@ant-design/icons";
 import { useDashboardStore } from "../store/dashboardStore";
 import { useChartStore } from "../store/chartStore";
 import { useParams, useNavigate } from "react-router-dom";
 import GridLayout from "react-grid-layout";
+import type { Layout, LayoutItem } from "react-grid-layout";
 import EChartRenderer from "../components/charts/EChartRenderer";
 import { buildEChartsOption } from "../utils/chartOptions";
 import { fetchChartData } from "../api/charts";
-import type { Chart, ChartData } from "../types";
+import { DashboardFilters } from "../components/dashboard/DashboardFilters";
+import { FilterManager } from "../components/dashboard/FilterManager";
+import type { Chart, ChartData, DashboardLayoutChart } from "../types";
 import "react-grid-layout/css/styles.css";
 
 interface ChartWithData {
@@ -24,9 +27,20 @@ export default function DashboardView() {
   const { charts, fetchCharts } = useChartStore();
   const [chartDataMap, setChartDataMap] = useState<Record<number, ChartWithData>>({});
   const [isEditing, setIsEditing] = useState(false);
-  const [layout, setLayout] = useState<{ i: string; x: number; y: number; w: number; h: number }[]>([]);
+  const [layout, setLayout] = useState<LayoutItem[]>([]);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [width, setWidth] = useState(window.innerWidth);
+  const [filterValues, setFilterValues] = useState<Record<string, string | number | null>>({});
+  const filterValuesRef = useRef(filterValues);
+  filterValuesRef.current = filterValues;
+  const [filterManagerOpen, setFilterManagerOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -36,47 +50,94 @@ export default function DashboardView() {
   }, [id, fetchDashboardById, fetchCharts]);
 
   useEffect(() => {
-    if (currentDashboard?.layout?.charts) {
-      const gridLayout = currentDashboard.layout.charts.map((c) => ({
-        i: String(c.chartId),
-        x: c.x,
-        y: c.y,
-        w: c.w,
-        h: c.h,
-      }));
-      setLayout(gridLayout);
+    const savedCharts = currentDashboard?.layout?.charts;
+    if (savedCharts && charts.length > 0) {
+      setLayout((prev) => {
+        if (prev.length > 0) return prev;
+        return savedCharts.map((c: DashboardLayoutChart) => ({
+          i: String(c.chartId),
+          x: c.x,
+          y: c.y,
+          w: c.w,
+          h: c.h,
+        }));
+      });
 
-      const chartIds = currentDashboard.layout.charts.map((c) => c.chartId);
-      chartIds.forEach((chartId) => {
+      const chartIds = savedCharts.map((c: DashboardLayoutChart) => c.chartId);
+      chartIds.forEach((chartId: number) => {
         if (!chartDataMap[chartId]) {
           loadChartData(chartId);
         }
       });
     }
-  }, [currentDashboard]);
+  }, [currentDashboard, charts]);
 
-  const loadChartData = async (chartId: number) => {
-    setChartDataMap((prev) => ({ ...prev, [chartId]: { ...prev[chartId], loading: true } }));
+  const loadChartData = async (chartId: number, globalFilters?: Record<string, unknown>[]) => {
+    setChartDataMap((prev: Record<number, ChartWithData>) => ({ ...prev, [chartId]: { ...prev[chartId], loading: true } }));
     try {
-      const data = await fetchChartData(chartId);
-      const chart = charts.find((c) => c.id === chartId);
+      const params: Record<string, unknown> = {};
+      if (globalFilters?.length) {
+        params.global_filters = JSON.stringify(globalFilters);
+      }
+      const data = await fetchChartData(chartId, params);
+      const chart = charts.find((c: Chart) => c.id === chartId);
       if (chart) {
-        setChartDataMap((prev) => ({
+        setChartDataMap((prev: Record<number, ChartWithData>) => ({
           ...prev,
           [chartId]: { chart, data, loading: false },
         }));
       }
     } catch {
-      setChartDataMap((prev) => ({
+      setChartDataMap((prev: Record<number, ChartWithData>) => ({
         ...prev,
         [chartId]: { ...prev[chartId], loading: false },
       }));
     }
   };
 
-  const handleLayoutChange = useCallback((newLayout: { i: string; x: number; y: number; w: number; h: number }[]) => {
+  const reloadAllCharts = useCallback(() => {
+    const savedCharts = currentDashboard?.layout?.charts;
+    if (!savedCharts) return;
+    const currentValues = filterValuesRef.current;
+    const activeFilters = currentDashboard?.filters
+      ?.filter((f) => currentValues[f.id] != null && currentValues[f.id] !== "")
+      .map((f) => {
+        const raw = currentValues[f.id];
+        let value = raw;
+        const validOps = ["eq", "neq", "gt", "gte", "lt", "lte"] as const;
+        type Op = typeof validOps[number];
+        let operator: Op = (f.operator as Op) || "eq";
+        // Parse operator-prefixed values from number filter type (e.g. "gt:50")
+        if (typeof raw === "string" && /^(eq|neq|gt|gte|lt|lte):/.test(raw)) {
+          const parts = raw.split(":");
+          operator = (validOps.includes(parts[0] as Op) ? parts[0] : "eq") as Op;
+          value = parts.slice(1).join(":");
+        }
+        return { column: f.column, value, operator };
+      }) || [];
+    savedCharts.forEach((sc: DashboardLayoutChart) => {
+      loadChartData(sc.chartId, activeFilters.length ? activeFilters : undefined);
+    });
+  }, [currentDashboard]);
+
+  const handleFilterChange = (filterId: string, value: string | number | null) => {
+    setFilterValues((prev) => ({ ...prev, [filterId]: value }));
+  };
+
+  const handleClearFilters = () => {
+    setFilterValues({});
+  };
+
+  // Reload charts when filter values change (using ref to avoid stale closure)
+  useEffect(() => {
+    if (!currentDashboard?.layout?.charts?.length) return;
+    reloadAllCharts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterValues]);
+
+  const handleLayoutChange = useCallback((newLayout: Layout) => {
     if (isEditing) {
-      setLayout(newLayout);
+      setLayout([...newLayout]);
     }
   }, [isEditing]);
 
@@ -84,7 +145,7 @@ export default function DashboardView() {
     if (!id) return;
     setSaving(true);
     const dashboardLayout = {
-      charts: layout.map((item) => ({
+      charts: layout.map((item: LayoutItem) => ({
         chartId: parseInt(item.i),
         x: item.x,
         y: item.y,
@@ -99,7 +160,7 @@ export default function DashboardView() {
   };
 
   const handleAddChart = (chartId: number) => {
-    const maxY = layout.reduce((max, item) => Math.max(max, item.y + item.h), 0);
+    const maxY = layout.reduce((max: number, item: LayoutItem) => Math.max(max, item.y + item.h), 0);
     setLayout([
       ...layout,
       { i: String(chartId), x: 0, y: maxY, w: 6, h: 4 },
@@ -109,15 +170,15 @@ export default function DashboardView() {
   };
 
   const handleRemoveChart = (chartId: string) => {
-    setLayout(layout.filter((item) => item.i !== chartId));
+    setLayout(layout.filter((item: LayoutItem) => item.i !== chartId));
   };
 
   if (loading) return <Spin className="block mx-auto mt-8" />;
   if (error) return <Alert type="error" message={error} className="m-4" />;
   if (!currentDashboard) return <Alert type="info" message="Dashboard not found" className="m-4" />;
 
-  const addedChartIds = layout.map((l) => parseInt(l.i));
-  const availableCharts = charts.filter((c) => !addedChartIds.includes(c.id));
+  const addedChartIds = layout.map((l: LayoutItem) => parseInt(l.i));
+  const availableCharts = charts.filter((c: Chart) => !addedChartIds.includes(c.id));
 
   return (
     <div>
@@ -129,6 +190,9 @@ export default function DashboardView() {
           )}
         </div>
         <div className="space-x-2">
+          <Button icon={<FilterOutlined />} onClick={() => setFilterManagerOpen(true)}>
+            Manage Filters
+          </Button>
           {!isEditing ? (
             <Button icon={<EditOutlined />} onClick={() => setIsEditing(true)}>
               Edit Layout
@@ -147,6 +211,13 @@ export default function DashboardView() {
         </div>
       </div>
 
+      <DashboardFilters
+        filters={currentDashboard.filters || []}
+        values={filterValues}
+        onChange={handleFilterChange}
+        onClear={handleClearFilters}
+      />
+
       {layout.length === 0 ? (
         <div className="bg-gray-50 h-96 flex items-center justify-center rounded-lg border-2 border-dashed">
           <div className="text-center">
@@ -157,57 +228,57 @@ export default function DashboardView() {
           </div>
         </div>
       ) : (
-        <GridLayout
-          className="layout"
-          layout={layout}
-          cols={12}
-          rowHeight={100}
-          width={1200}
-          onLayoutChange={handleLayoutChange}
-          isDraggable={isEditing}
-          isResizable={isEditing}
-          compactType="vertical"
-        >
-          {layout.map((item) => {
-            const chartId = parseInt(item.i);
-            const chartInfo = charts.find((c) => c.id === chartId);
-            const dataWrapper = chartDataMap[chartId];
-            const chartOption = dataWrapper?.data
-              ? buildEChartsOption(dataWrapper.data.chart_type, dataWrapper.data)
-              : {};
+        <div style={{ width: "100%", position: "relative", left: "50%", transform: "translateX(-50%)" }}>
+          <GridLayout
+            layout={layout}
+            width={width}
+            autoSize
+            onLayoutChange={handleLayoutChange}
+            gridConfig={{ cols: 12, rowHeight: 100, margin: [10, 10] }}
+            dragConfig={{ enabled: isEditing }}
+            resizeConfig={{ enabled: isEditing }}
+          >
+            {layout.map((item: LayoutItem) => {
+              const chartId = parseInt(item.i);
+              const chartInfo = charts.find((c: Chart) => c.id === chartId);
+              const dataWrapper = chartDataMap[chartId];
+              const chartOption = dataWrapper?.data
+                ? buildEChartsOption(dataWrapper.data.chart_type, dataWrapper.data)
+                : {};
 
-            return (
-              <div key={item.i} className="bg-white rounded-lg shadow-sm border overflow-hidden">
-                <div className="flex justify-between items-center px-3 py-2 bg-gray-50 border-b">
-                  <span className="font-medium text-sm truncate">
-                    {chartInfo?.name || `Chart #${chartId}`}
-                  </span>
-                  {isEditing && (
-                    <Button
-                      danger
-                      size="small"
-                      onClick={() => handleRemoveChart(item.i)}
-                    >
-                      Remove
-                    </Button>
-                  )}
+              return (
+                <div key={item.i} className="bg-white rounded-lg shadow-sm border overflow-hidden">
+                  <div className="flex justify-between items-center px-3 py-2 bg-gray-50 border-b">
+                    <span className="font-medium text-sm truncate">
+                      {chartInfo?.name || `Chart #${chartId}`}
+                    </span>
+                    {isEditing && (
+                      <Button
+                        danger
+                        size="small"
+                        onClick={() => handleRemoveChart(item.i)}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                  <div className="p-2 h-[calc(100%-40px)]">
+                    {dataWrapper?.loading ? (
+                      <div className="h-full flex items-center justify-center">
+                        <Spin />
+                      </div>
+                    ) : (
+                      <EChartRenderer
+                        option={chartOption as Record<string, unknown>}
+                        height="100%"
+                      />
+                    )}
+                  </div>
                 </div>
-                <div className="p-2 h-[calc(100%-40px)]">
-                  {dataWrapper?.loading ? (
-                    <div className="h-full flex items-center justify-center">
-                      <Spin />
-                    </div>
-                  ) : (
-                    <EChartRenderer
-                      option={chartOption as Record<string, unknown>}
-                      height="100%"
-                    />
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </GridLayout>
+              );
+            })}
+          </GridLayout>
+        </div>
       )}
 
       <Modal
@@ -223,13 +294,35 @@ export default function DashboardView() {
             className="w-full"
             placeholder="Select a chart to add"
             onSelect={handleAddChart}
-            options={availableCharts.map((c) => ({
+            options={availableCharts.map((c: Chart) => ({
               value: c.id,
               label: `${c.name} (${c.chart_type_display})`,
             }))}
           />
         )}
       </Modal>
+
+      <FilterManager
+        open={filterManagerOpen}
+        onClose={() => setFilterManagerOpen(false)}
+        dashboardId={parseInt(id!)}
+        filters={currentDashboard.filters || []}
+        onSaved={(filters) => {
+          useDashboardStore.setState((state) => ({
+            currentDashboard: state.currentDashboard
+              ? { ...state.currentDashboard, filters }
+              : null,
+          }));
+          // populate default values into filter state so charts reload
+          const defaults: Record<string, string | number | null> = {};
+          filters.forEach((f) => {
+            if (f.defaultValue != null && f.defaultValue !== "") {
+              defaults[f.id] = f.defaultValue;
+            }
+          });
+          setFilterValues(defaults);
+        }}
+      />
     </div>
   );
 }

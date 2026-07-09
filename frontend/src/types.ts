@@ -80,6 +80,17 @@ export interface DashboardLayoutChart {
   h: number;
 }
 
+export interface DashboardFilter {
+  id: string;
+  name: string;
+  type: "select" | "date" | "daterange" | "text" | "number";
+  column: string;
+  dataset: number | null;
+  defaultValue: string | number | null;
+  options?: string[];
+  operator?: "eq" | "neq" | "gt" | "gte" | "lt" | "lte";
+}
+
 export interface DashboardLayout {
   charts: DashboardLayoutChart[];
 }
@@ -89,6 +100,7 @@ export interface Dashboard {
   name: string;
   description: string;
   layout: DashboardLayout | null;
+  filters: DashboardFilter[];
   chart_count: number;
   created_by: number;
   created_by_name: string;
