@@ -22,6 +22,10 @@ const LABELS: Record<ChartType, { x: string; y: string; groupBy: boolean; aggreg
   scatter: { x: "X Value", y: "Y Value", groupBy: false, aggregate: false },
   heatmap: { x: "Row", y: "Column", groupBy: false, aggregate: false },
   kpi: { x: "Label", y: "Value", groupBy: false, aggregate: true },
+  gauge: { x: "Label", y: "Value", groupBy: false, aggregate: true },
+  funnel: { x: "Stage", y: "Value", groupBy: false, aggregate: true },
+  treemap: { x: "Label", y: "Value", groupBy: false, aggregate: true },
+  radar: { x: "Dimension", y: "Value", groupBy: false, aggregate: false },
 };
 
 export default function ColumnMapper({

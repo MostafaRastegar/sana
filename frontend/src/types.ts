@@ -33,7 +33,11 @@ export type ChartType =
   | "scatter"
   | "area"
   | "heatmap"
-  | "kpi";
+  | "kpi"
+  | "gauge"
+  | "funnel"
+  | "treemap"
+  | "radar";
 
 export interface Filter {
   column: string;

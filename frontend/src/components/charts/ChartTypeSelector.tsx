@@ -15,6 +15,10 @@ const chartIcons: Record<string, string> = {
   area: "🏔️",
   heatmap: "🔥",
   kpi: "🎯",
+  gauge: "🔄",
+  funnel: "🔽",
+  treemap: "🧩",
+  radar: "🕸️",
 };
 
 export default function ChartTypeSelector({ value, onChange }: ChartTypeSelectorProps) {

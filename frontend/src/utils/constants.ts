@@ -6,6 +6,10 @@ export const CHART_TYPES = [
   { value: "area", label: "Area", icon: "🏔️" },
   { value: "heatmap", label: "Heatmap", icon: "🔥" },
   { value: "kpi", label: "KPI", icon: "🎯" },
+  { value: "gauge", label: "Gauge", icon: "🔄" },
+  { value: "funnel", label: "Funnel", icon: "🔽" },
+  { value: "treemap", label: "Treemap", icon: "🧩" },
+  { value: "radar", label: "Radar", icon: "🕸️" },
 ] as const;
 
 export const AGGREGATE_OPTIONS = [
