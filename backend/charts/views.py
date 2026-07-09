@@ -150,7 +150,10 @@ class ChartViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"])
     def data(self, request, pk=None):
-        """Compute chart data for a saved chart."""
+        """Compute chart data for a saved chart.
+        Accepts optional `global_filters` query param (JSON-encoded array)
+        to merge into the chart's config filters.
+        """
         chart = self.get_object()
         dataset = chart.dataset
         table_name = dataset.table_name
@@ -167,8 +170,29 @@ class ChartViewSet(viewsets.ModelViewSet):
                     code="table_not_found",
                 )
 
-        sql, params = self._build_chart_sql(chart.config, table_name)
-        return Response(self._execute_chart_sql(sql, params, chart.chart_type, chart.config))
+        # Merge global filters into chart config
+        config = dict(chart.config)
+        global_filters_raw = request.query_params.get("global_filters")
+        if global_filters_raw:
+            import json
+            try:
+                global_filters = json.loads(global_filters_raw)
+                if isinstance(global_filters, list):
+                    existing_filters = config.get("filters", [])
+                    if not isinstance(existing_filters, list):
+                        existing_filters = []
+                    # Merge: global filters override chart filters with same column
+                    merged = {f.get("column"): f for f in existing_filters}
+                    for gf in global_filters:
+                        col = gf.get("column")
+                        if col:
+                            merged[col] = gf
+                    config["filters"] = list(merged.values())
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        sql, params = self._build_chart_sql(config, table_name)
+        return Response(self._execute_chart_sql(sql, params, chart.chart_type, config))
 
     @action(detail=False, methods=["post"])
     def preview(self, request):

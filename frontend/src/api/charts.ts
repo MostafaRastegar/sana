@@ -11,8 +11,8 @@ export const fetchChartById = async (id: number) => {
   return data as Chart;
 };
 
-export const fetchChartData = async (id: number) => {
-  const { data } = await client.get(`/charts/${id}/data/`);
+export const fetchChartData = async (id: number, params?: Record<string, unknown>) => {
+  const { data } = await client.get(`/charts/${id}/data/`, { params });
   return data as ChartData;
 };
 
