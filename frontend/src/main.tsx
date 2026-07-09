@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { ConfigProvider, theme } from "antd";
-import { BrowserRouter } from "react-router-dom";
-import App from "./App";
+import { RouterProvider } from "react-router-dom";
+import { router } from "./App";
 import { useUIStore } from "./store/uiStore";
 import "./index.css";
 
@@ -19,9 +19,7 @@ function ThemedApp() {
         },
       }}
     >
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <RouterProvider router={router} />
     </ConfigProvider>
   );
 }

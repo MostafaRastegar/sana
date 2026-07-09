@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import type { RouteObject } from "react-router-dom";
 import { Layout } from "antd";
 import Sidebar from "./components/Sidebar";
 import TopBar from "./components/TopBar";
@@ -14,45 +15,41 @@ import { isAuthenticated } from "./api/client";
 
 const { Content } = Layout;
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+function ProtectedLayout() {
   if (!isAuthenticated()) {
     return <Navigate to="/login" replace />;
   }
-  return <>{children}</>;
-}
-
-function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route
-        path="/*"
-        element={
-          <ProtectedRoute>
-            <Layout className="h-screen">
-              <Sidebar />
-              <Layout>
-                <TopBar />
-                <Content className="p-4 overflow-auto">
-                  <Routes>
-                    <Route path="/" element={<Navigate to="/dashboards" replace />} />
-                    <Route path="/dashboards" element={<DashboardList />} />
-                    <Route path="/dashboards/:id" element={<DashboardView />} />
-                    <Route path="/charts" element={<ChartList />} />
-                    <Route path="/charts/new" element={<ChartBuilder />} />
-                    <Route path="/charts/:id" element={<ChartBuilder />} />
-                    <Route path="/datasets" element={<DatasetList />} />
-                    <Route path="/datasets/:id" element={<DatasetView />} />
-                    <Route path="/sql" element={<SQLEditor />} />
-                  </Routes>
-                </Content>
-              </Layout>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+
+<Layout className="h-screen">
+        <Sidebar />
+        <Layout>
+          <TopBar />
+          <Content className="p-4 overflow-auto">
+            <Outlet />
+          </Content>
+        </Layout>
+      </Layout>
   );
 }
 
-export default App;
+const routes: RouteObject[] = [
+  { path: "/login", element: <LoginPage /> },
+  {
+    path: "/*",
+    element: <ProtectedLayout />,
+    children: [
+      { index: true, element: <Navigate to="/dashboards" replace /> },
+      { path: "dashboards", element: <DashboardList /> },
+      { path: "dashboards/:id", element: <DashboardView /> },
+      { path: "charts", element: <ChartList /> },
+      { path: "charts/new", element: <ChartBuilder /> },
+      { path: "charts/:id", element: <ChartBuilder /> },
+      { path: "datasets", element: <DatasetList /> },
+      { path: "datasets/:id", element: <DatasetView /> },
+      { path: "sql", element: <SQLEditor /> },
+    ],
+  },
+];
+
+export const router = createBrowserRouter(routes);

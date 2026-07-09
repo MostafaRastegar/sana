@@ -1,6 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1668dc;
+}
+
+:root {
+  --tw-border-color: red;
+
+}
 
 body {
   margin: 0;
