@@ -1,48 +1,29 @@
 ---
-name: crud_pattern_rule
+name: django-crud-patterns
 description: Standardized CRUD patterns for Django REST Framework — model viewsets, serializers, action mapping, and bulk operations.
 ---
 
-# Django CRUD Patterns
+# django-crud-patterns
 
-## When to Use
+Defines standardized CRUD patterns: ModelViewSet configuration, serializer mapping, custom actions, bulk operations, and URL routing for any Django model via REST Framework.
+
+## Usage
+
 Use this skill when building or extending CRUD endpoints for any Django model via REST Framework.
 
-## Overview
-Defines standardized CRUD patterns: ModelViewSet configuration, serializer mapping, custom actions, bulk operations, and URL routing.
+## Steps
 
-## Key Patterns
+1. **ModelViewSet Configuration** — Use `ModelViewSet` for full CRUD, override `get_queryset()` for filtering, set `permission_classes` per action, use `action` decorator for custom endpoints.
 
-### 1. ModelViewSet Configuration
-- Use `ModelViewSet` for full CRUD
-- Override `get_queryset()` for filtering
-- Set `permission_classes` per action
-- Use `action` decorator for custom endpoints
+2. **Serializer Mapping** — Separate read/write serializers, use `get_serializer_class()` for conditional mapping, override `perform_create/update` for side effects.
 
-### 2. Serializer Mapping
-- Separate read/write serializers
-- Use `get_serializer_class()` for conditional mapping
-- Override `perform_create/update` for side effects
+3. **Custom Actions** — Use `@action(detail=True, methods=['post'])` for non-CRUD endpoints (e.g. archive, restore). Return explicit status codes.
 
-### 3. Custom Actions
-```python
-@action(detail=True, methods=['post'])
-def archive(self, request, pk=None):
-    obj = self.get_object()
-    obj.is_archived = True
-    obj.save()
-    return Response(status=204)
-```
+4. **Bulk Operations** — Class-based views or decorators for bulk create/update/delete. Always validate all items before any mutation.
 
-### 4. Bulk Operations
-Class-based views or decorators for bulk create/update/delete. Always validate all items before any mutation.
+5. **URL Routing** — `DefaultRouter` for standard CRUD, nested routers for parent/child resources, explicit `path()` for custom actions.
 
-### 5. URL Routing
-- DefaultRouter for standard CRUD
-- Nested routers for parent/child resources
-- Explicit path() for custom actions
-
-## Checklist
+**Checklist:**
 - [ ] ViewSet uses appropriate queryset with select_related/prefetch_related
 - [ ] Serializers validate at field and object level
 - [ ] Custom actions have throttle_classes
