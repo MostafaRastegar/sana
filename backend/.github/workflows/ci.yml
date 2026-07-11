@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths-ignore:
+      - "media/**"
+      - "static/**"
+      - "templates/**"
+      - "**/*.md"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff mypy
+      - name: Ruff lint
+        run: ruff check .
+      - name: Mypy type check
+        run: mypy . --ignore-missing-imports || true
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: sana_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/sana_test
+      DEBUG: "False"
+      SECRET_KEY: ci-test-secret-key
+      DJANGO_SETTINGS_MODULE: config.settings.test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 libffi-dev libcairo2 libpq-dev
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-django pytest-cov
+      - name: Run migrations
+        run: python manage.py migrate --settings=config.settings.test
+      - name: Run tests with coverage
+        run: |
+          python -m pytest --cov=core --cov=alerts --cov=charts --cov=dashboards --cov=datasets --cov=datasources --cov=reports --cov=management --cov-report=term-missing --cov-fail-under=40
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: htmlcov/

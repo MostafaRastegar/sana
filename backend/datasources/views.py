@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework import permissions as drf_permissions
 from django.utils import timezone
 from django.conf import settings
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 from django_filters import rest_framework as filters
 
 from .models import DataSource, SyncLog, CSVImportJob
@@ -26,6 +28,7 @@ class DataSourceFilter(filters.FilterSet):
         fields = ["source_type", "status", "is_active"]
 
 
+@method_decorator(cache_page(60 * 15), name="list")
 class DataSourceViewSet(viewsets.ModelViewSet):
     queryset = DataSource.objects.all()
     serializer_class = DataSourceSerializer

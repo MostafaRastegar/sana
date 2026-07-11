@@ -3,6 +3,8 @@ from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db import connection, DatabaseError
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 from core.utils.pagination import CustomPagination
 from core.base_exception import DmvnException
 from charts.models import SavedQuery
@@ -69,6 +71,7 @@ def execute_query(request):
     )
 
 
+@method_decorator(cache_page(60 * 15), name="list")
 class SavedQueryViewSet(viewsets.ModelViewSet):
     """
     ViewSet for SavedQuery model.

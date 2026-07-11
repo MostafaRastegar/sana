@@ -210,6 +210,19 @@ REST_FRAMEWORK = {
     },
 }
 
+# Redis / Cache
+CACHES = {
+    "default": {
+        "BACKEND": os.environ.get(
+            "CACHE_BACKEND",
+            "django.core.cache.backends.locmem.LocMemCache"
+        ),
+        "LOCATION": os.environ.get("CACHE_LOCATION", ""),
+        "KEY_PREFIX": "sana",
+        "TIMEOUT": 60 * 15,
+    }
+}
+
 # JWT Settings
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(

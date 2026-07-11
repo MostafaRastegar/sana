@@ -51,6 +51,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "ruff==0.11.0",
     "black==24.1.1",
     "isort==5.13.2",
     "pylint==3.0.3",
@@ -67,7 +68,6 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-# Explicitly include only the Python packages we want
 include = ["core", "accounts", "management", "datasets", "charts", "dashboards", "query"]
 exclude = ["media", "static", "staticfiles", "private_media", "tests", "migrations"]
 
@@ -87,6 +87,37 @@ multi_line_output = 3
 line_length = 88
 known_first_party = ["core", "accounts", "api"]
 skip = ["migrations", "venv", "env"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "F",   # pyflakes: unused imports, undefined names
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "RUF", # ruff-specific
+]
+ignore = [
+    "E501", # line-too-long (covered by formatter)
+    "N801", # class names (Django models have PascalCase convention warnings)
+    "N815", # mixed-case variable
+]
+exclude = [
+    "migrations",
+    "__pycache__",
+    "venv",
+    "env",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = true
 
 [tool.mypy]
 python_version = "3.11"
@@ -135,18 +166,17 @@ preferred-modules = [
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.development"
-addopts = "-v --tb=short --cov=core --cov=accounts --cov=api --cov-report=html --cov-report=term-missing"
-testpaths = ["tests"]
+addopts = "-v --tb=short --cov=core --cov=alerts --cov=charts --cov=dashboards --cov=datasets --cov=datasources --cov=reports --cov=management --cov-report=term-missing --cov-fail-under=40"
+testpaths = ["."]
 python_files = ["test_*.py", "*_tests.py"]
 python_classes = ["Test*", "*Tests"]
 python_functions = ["test_*"]
 
 [tool.coverage.run]
-source = ["core", "accounts", "api"]
+source = ["core", "alerts", "charts", "dashboards", "datasets", "datasources", "reports", "management"]
 omit = [
     "*/migrations/*",
     "*/tests/*",
     "*/test_*",
     "manage.py",
 ]
-
