@@ -1,4 +1,5 @@
 import json
+import re
 from rest_framework import viewsets, status, filters as drf_filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -9,6 +10,16 @@ from core.utils.pagination import CustomPagination
 from core.base_exception import DmvnException
 from .models import Chart, SavedQuery
 from .serializers import ChartSerializer, ChartDataSerializer, SavedQuerySerializer
+
+
+def _validate_identifier(name):
+    """Whitelist: only alphanumeric + underscore, no SQL injection."""
+    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name):
+        raise DmvnException(
+            f"Invalid identifier: '{name}'",
+            status_code=400,
+            code="bad_request",
+        )
 
 
 class ChartViewSet(viewsets.ModelViewSet):
@@ -60,6 +71,8 @@ class ChartViewSet(viewsets.ModelViewSet):
                 code="bad_request",
             )
 
+        _validate_identifier(table_name)
+
         group_cols = []
         if aggregate and aggregate != "none":
             agg_func = {
@@ -73,13 +86,17 @@ class ChartViewSet(viewsets.ModelViewSet):
             if is_kpi:
                 # KPI mode: single aggregate value, no grouping
                 metric_col = config.get("metric") or y_axis
+                _validate_identifier(metric_col)
                 select_cols = [f'{agg_func}("{metric_col}") as "{metric_col}"']
                 sql = f'SELECT {", ".join(select_cols)} FROM "{table_name}"'
             else:
+                _validate_identifier(x_axis)
+                _validate_identifier(y_axis)
                 select_cols = [f'"{x_axis}"']
                 group_cols = [f'"{x_axis}"']
 
                 if group_by:
+                    _validate_identifier(group_by)
                     select_cols.append(f'"{group_by}"')
                     group_cols.append(f'"{group_by}"')
 
@@ -96,6 +113,7 @@ class ChartViewSet(viewsets.ModelViewSet):
             val = f.get("value")
             if not col:
                 continue
+            _validate_identifier(col)
             if op == "eq":
                 where_clauses.append(f'"{col}" = %s')
                 params.append(val)
@@ -130,6 +148,7 @@ class ChartViewSet(viewsets.ModelViewSet):
 
         if sort_config:
             col = sort_config.get("column", x_axis)
+            _validate_identifier(col)
             direction = sort_config.get("direction", "asc")
             sql += f' ORDER BY "{col}" {direction.upper()}'
         elif aggregate and aggregate != "none":
@@ -341,6 +360,7 @@ class ChartViewSet(viewsets.ModelViewSet):
                     code="table_not_found",
                 )
 
+        _validate_identifier(column)
         sql = f'SELECT * FROM "{table_name}" WHERE "{column}" = %s'
         params = [value]
         with connection.cursor() as cursor:

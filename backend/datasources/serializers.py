@@ -1,9 +1,16 @@
 import os
+import re
 
 from django.conf import settings
 from rest_framework import serializers
 
 from .models import CSVImportJob, DataSource, SyncLog
+
+
+def _validate_filename(name):
+    """Prevent path traversal: only safe filename chars."""
+    if not re.match(r'^[a-zA-Z0-9_\.\-]+$', name):
+        raise serializers.ValidationError(f"Invalid filename: '{name}'")
 
 
 class DataSourceSerializer(serializers.ModelSerializer):
@@ -54,15 +61,17 @@ class DataSourceSerializer(serializers.ModelSerializer):
             # Try to get file from initial_data
             f = self.initial_data.get("file")
             if f:
+                safe_name = os.path.basename(f.name)
+                _validate_filename(safe_name)
                 upload_dir = os.path.join(settings.MEDIA_ROOT, "datasource_files")
                 os.makedirs(upload_dir, exist_ok=True)
-                file_path = os.path.join(upload_dir, f.name)
+                file_path = os.path.join(upload_dir, safe_name)
                 with open(file_path, "wb+") as dest:
                     for chunk in f.chunks():
                         dest.write(chunk)
                 attrs["connection_config"] = {
                     "file_path": file_path,
-                    "file_name": f.name,
+                    "file_name": safe_name,
                 }
 
         return super().validate(attrs)
