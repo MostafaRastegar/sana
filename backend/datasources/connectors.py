@@ -66,6 +66,14 @@ def sync_data(source: DataSource) -> dict[str, Any]:
         source.error_message = ""
         source.save(update_fields=["last_synced", "status", "error_message"])
 
+        # Auto-create or update a Dataset for this datasource
+        columns = result.get("columns", [])
+        if columns:
+            try:
+                _auto_create_dataset(source, columns)
+            except Exception as ds_err:
+                logger.warning(f"Auto-create dataset failed for {source.name}: {ds_err}")
+
         return result
     except Exception as e:
         logger.exception(f"Sync failed for {source.name}")
@@ -78,6 +86,39 @@ def sync_data(source: DataSource) -> dict[str, Any]:
         source.error_message = str(e)
         source.save(update_fields=["status", "error_message"])
         return {"status": "failed", "rows_imported": 0, "error_message": str(e)}
+
+
+def _auto_create_dataset(source: DataSource, columns: list[str]) -> None:
+    """Create or update a Dataset linked to this DataSource."""
+    from datasets.models import Dataset
+
+    col_defs = [{"name": c, "type": "string", "label": c.replace("_", " ").title()} for c in columns]
+
+    table_name = f"datasource_{source.id}"
+
+    # Count rows
+    row_count = 0
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(f'SELECT COUNT(*) FROM "{table_name}"')
+            row_count = cursor.fetchone()[0]
+    except Exception:
+        pass
+
+    existing = Dataset.objects.filter(datasource=source).first()
+    if existing:
+        existing.columns = col_defs
+        existing.row_count = row_count
+        existing.save(update_fields=["columns", "row_count"])
+    else:
+        Dataset.objects.create(
+            name=source.name,
+            description=f"Auto-created from datasource: {source.name}",
+            table_name=table_name,
+            columns=col_defs,
+            row_count=row_count,
+            datasource=source,
+        )
 
 
 def _import_rows_to_local(table_name: str, columns: list[str], rows: list[list]) -> int:
@@ -199,7 +240,7 @@ def _sync_sql(source: DataSource) -> dict[str, Any]:
     table_name = f"datasource_{source.id}"
     imported = _import_rows_to_local(table_name, columns, rows)
 
-    return {"status": "success", "rows_imported": imported, "table_name": table_name}
+    return {"status": "success", "rows_imported": imported, "table_name": table_name, "columns": columns}
 
 
 # ── REST API ──────────────────────────────────────────
@@ -234,19 +275,20 @@ def _sync_api(source: DataSource) -> dict[str, Any]:
     table_name = f"datasource_{source.id}"
     imported = _import_rows_to_local(table_name, columns, rows)
 
-    return {"status": "success", "rows_imported": imported, "table_name": table_name}
+    return {"status": "success", "rows_imported": imported, "table_name": table_name, "columns": columns}
 
 
 # ── CSV ────────────────────────────────────────────────
 
 
 def _test_csv(config: dict) -> tuple[bool, str]:
-    content = config.get("csv_content", "")
-    if not content:
-        return False, "No CSV content"
-    reader = csv.reader(io.StringIO(content))
-    next(reader)  # Header row
-    return True, "CSV parsed successfully"
+    file_path = config.get("file_path", "")
+    if not file_path:
+        return False, "No CSV file path configured"
+    import os
+    if not os.path.exists(file_path):
+        return False, f"CSV file not found at path: {file_path}"
+    return True, "CSV file exists and is accessible"
 
 
 def get_data(source: DataSource, limit: int = 1000) -> dict[str, Any]:
@@ -265,12 +307,13 @@ def get_data(source: DataSource, limit: int = 1000) -> dict[str, Any]:
 
 def _sync_csv(source: DataSource) -> dict[str, Any]:
     config = source.get_decrypted_config()
-    content = config.get("csv_content", "")
-    if not content:
-        file_path = config.get("file_path", "")
-        if file_path:
-            with open(file_path) as f:
-                content = f.read()
+    file_path = config.get("file_path", "")
+
+    if not file_path:
+        raise ValueError("No CSV file path configured")
+
+    with open(file_path) as f:
+        content = f.read()
 
     reader = csv.reader(io.StringIO(content))
     rows = list(reader)
@@ -283,17 +326,8 @@ def _sync_csv(source: DataSource) -> dict[str, Any]:
     table_name = f"datasource_{source.id}"
     imported = _import_rows_to_local(table_name, columns, data_rows)
 
-    # Create an import job record
-    CSVImportJob.objects.create(
-        source=source,
-        file_name=config.get("file_name", "upload.csv"),
-        file_path=config.get("file_path", ""),
-        rows_total=len(data_rows),
-        rows_imported=imported,
-        rows_failed=0,
-        status="completed",
-        started_at=timezone.now(),
-        finished_at=timezone.now(),
-    )
+    config["csv_content"] = content
+    source.connection_config = config
+    source.save(update_fields=["connection_config"])
 
-    return {"status": "success", "rows_imported": imported, "table_name": table_name}
+    return {"status": "success", "rows_imported": imported, "table_name": table_name, "columns": columns}

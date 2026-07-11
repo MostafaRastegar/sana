@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Spin, Alert, Button, Table, Card, Descriptions, Tag, Space, Modal, message } from "antd";
-import { ArrowLeftOutlined, ReloadOutlined, DeleteOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, ReloadOutlined, DeleteOutlined, DatabaseOutlined } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDatasetStore } from "../store/datasetStore";
 
@@ -79,6 +79,11 @@ export default function DatasetView() {
           </Descriptions.Item>
           <Descriptions.Item label="Created">
             {new Date(currentDataset.created_at).toLocaleDateString()}
+          </Descriptions.Item>
+          <Descriptions.Item label="Data Source">
+            {currentDataset.datasource_name ? (
+              <Tag icon={<DatabaseOutlined />} color="blue">{currentDataset.datasource_name}</Tag>
+            ) : "-"}
           </Descriptions.Item>
           {currentDataset.description && (
             <Descriptions.Item label="Description" span={2}>

@@ -1,5 +1,6 @@
 import client from "./client";
 import type { DataSource, SyncLog } from "../types";
+import { getCookie } from "../utils/cookies";
 
 export const fetchDataSources = async (params?: Record<string, unknown>) => {
   const { data } = await client.get("/datasources/", { params });
@@ -43,4 +44,18 @@ export const fetchSyncLogs = async (id: number) => {
 export const fetchRecords = async (id: number) => {
   const { data } = await client.get(`/datasources/${id}/records/`);
   return data as { columns: string[]; rows: Record<string, unknown>[]; row_count: number };
+};
+
+export const uploadCsvFile = async (id: number, file: File) => {
+  const token = getCookie("access_token");
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch(`/api/datasources/${id}/import-csv/`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: fd,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error?.message || "CSV import failed");
+  return data;
 };

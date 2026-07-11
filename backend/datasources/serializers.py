@@ -34,6 +34,17 @@ class DataSourceSerializer(serializers.ModelSerializer):
         # CSV uploads: auto-populate connection_config from uploaded file
         if ds_type == "csv":
             config = attrs.get("connection_config")
+
+            # If updating and no new connection_config provided, keep existing
+            if config is None and self.instance and self.instance.pk:
+                # Don't wipe existing config on update without config data
+                attrs.pop("connection_config", None)
+                return super().validate(attrs)
+
+            # If config is a string (already encrypted from the model), skip
+            if isinstance(config, str):
+                return super().validate(attrs)
+
             # If already has a valid config (update without new file), keep it
             if config and isinstance(config, dict) and config.get("file_path"):
                 file_path = config["file_path"]

@@ -4,6 +4,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework import permissions as drf_permissions
 from django.utils import timezone
+from django.conf import settings
 from django_filters import rest_framework as filters
 
 from .models import DataSource, SyncLog, CSVImportJob
@@ -12,6 +13,7 @@ from .serializers import (
     SyncLogSerializer, CSVImportJobSerializer,
 )
 from .connectors import test_connection, sync_data
+from datasets.serializers import DatasetSerializer
 
 
 class DataSourceFilter(filters.FilterSet):
@@ -32,14 +34,7 @@ class DataSourceViewSet(viewsets.ModelViewSet):
     ordering_fields = ["created_at", "name", "status", "last_synced"]
 
     def perform_create(self, serializer):
-        instance = serializer.save()
-        # Auto-sync CSV datasources so the dynamic table exists
-        if instance.source_type == "csv":
-            from .connectors import sync_data
-            try:
-                sync_data(instance)
-            except Exception:
-                pass  # sync failure shouldn't block creation
+        serializer.save()
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -91,6 +86,55 @@ class DataSourceViewSet(viewsets.ModelViewSet):
         serializer = CSVImportJobSerializer(jobs, many=True)
         return Response(serializer.data)
 
+    @action(detail=True, methods=["post"])
+    def create_dataset(self, request, pk=None):
+        """Create a Dataset from this DataSource's synced table."""
+        source = self.get_object()
+        from .connectors import _auto_create_dataset, get_data
+
+        # Fetch column metadata from the synced table
+        data = get_data(source)
+        columns = data.get("columns", [])
+
+        if not columns:
+            # Try syncing first
+            try:
+                result = sync_data(source)
+                columns = result.get("columns", [])
+            except Exception as exc:
+                return Response(
+                    {"error": {"code": "sync_failed", "message": str(exc), "details": []}},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+
+        if not columns:
+            return Response(
+                {"error": {"code": "no_data", "message": "No data columns found. Sync the datasource first.", "details": []}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            _auto_create_dataset(source, columns)
+        except Exception as exc:
+            return Response(
+                {"error": {"code": "create_failed", "message": str(exc), "details": []}},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        # Return the created/updated dataset
+        from datasets.models import Dataset
+        ds = Dataset.objects.filter(datasource=source).first()
+        serializer = DatasetSerializer(ds, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["get"])
+    def datasets(self, request, pk=None):
+        """Get datasets linked to this data source."""
+        source = self.get_object()
+        datasets = source.datasets.all()
+        serializer = DatasetSerializer(datasets, many=True, context={"request": request})
+        return Response(serializer.data)
+
     def _handle_csv_import(self, source, request):
         """Shared logic for CSV file upload and import."""
         csv_file = request.FILES.get("file")
@@ -101,8 +145,8 @@ class DataSourceViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        import tempfile, os
-        upload_dir = os.path.join(tempfile.gettempdir(), "datasource_files")
+        import os
+        upload_dir = os.path.join(settings.MEDIA_ROOT, "datasource_files")
         os.makedirs(upload_dir, exist_ok=True)
         file_path = os.path.join(upload_dir, csv_file.name)
         with open(file_path, "wb+") as dest:
@@ -113,6 +157,7 @@ class DataSourceViewSet(viewsets.ModelViewSet):
         source.status = "ready"
         source.save(update_fields=["connection_config", "status", "updated_at"])
 
+        # Create one CSVImportJob before syncing
         job = CSVImportJob.objects.create(
             source=source,
             file_name=csv_file.name,
@@ -120,7 +165,6 @@ class DataSourceViewSet(viewsets.ModelViewSet):
             status="pending",
         )
 
-        from .connectors import sync_data
         try:
             result = sync_data(source)
             if result.get("status") == "failed":
@@ -132,8 +176,12 @@ class DataSourceViewSet(viewsets.ModelViewSet):
                     {"error": {"code": "sync_failed", "message": result.get("error_message", "Sync failed"), "details": []}},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
-            # sync_data already created a CSVImportJob via _sync_csv
-            job = CSVImportJob.objects.filter(source=source).order_by("-created_at").first()
+            # Update the pending job with results
+            job.status = "completed"
+            job.rows_total = result.get("rows_imported", 0)
+            job.rows_imported = result.get("rows_imported", 0)
+            job.finished_at = timezone.now()
+            job.save(update_fields=["status", "rows_total", "rows_imported", "finished_at"])
         except Exception as e:
             job.status = "failed"
             job.error_log = str(e)

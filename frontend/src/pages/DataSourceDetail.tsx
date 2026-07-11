@@ -4,10 +4,11 @@ import {
   Descriptions, Button, Tag, Spin, Table, message, Card, Space, Divider, Tabs, Typography,
 } from "antd";
 import {
-  ArrowLeftOutlined, ApiOutlined, SyncOutlined, ReloadOutlined, UploadOutlined,
+  ArrowLeftOutlined, ApiOutlined, SyncOutlined, ReloadOutlined, UploadOutlined, DatabaseOutlined,
 } from "@ant-design/icons";
 import { useDatasourceStore } from "../store/datasourceStore";
-import type { SyncLog } from "../types";
+import { useDatasetStore } from "../store/datasetStore";
+import type { SyncLog, Dataset } from "../types";
 
 const sourceTypeColors: Record<string, string> = {
   postgresql: "blue", mysql: "orange", sqlite: "purple", api: "green", csv: "cyan",
@@ -26,16 +27,35 @@ export default function DataSourceDetail() {
     currentDatasource: ds, logs, records, loading,
     fetchDatasourceById, testConnection, sync, fetchLogs, fetchRecords,
   } = useDatasourceStore();
+  const { createFromDatasource } = useDatasetStore();
 
   const numericId = Number(id);
+  const [linkedDatasets, setLinkedDatasets] = useState<Dataset[]>([]);
+  const [creatingDataset, setCreatingDataset] = useState(false);
+
+  const fetchLinkedDatasets = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`/api/datasources/${numericId}/datasets/`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLinkedDatasets(data);
+      }
+    } catch {
+      // silently fail
+    }
+  }, [numericId]);
 
   useEffect(() => {
     if (numericId) {
       fetchDatasourceById(numericId);
       fetchLogs(numericId);
       fetchRecords(numericId);
+      fetchLinkedDatasets();
     }
-  }, [numericId, fetchDatasourceById, fetchLogs, fetchRecords]);
+  }, [numericId, fetchDatasourceById, fetchLogs, fetchRecords, fetchLinkedDatasets]);
 
   const handleTest = useCallback(async () => {
     const result = await testConnection(numericId);
@@ -47,7 +67,8 @@ export default function DataSourceDetail() {
     message.success("Sync triggered");
     fetchLogs(numericId);
     fetchRecords(numericId);
-  }, [numericId, sync, fetchLogs, fetchRecords]);
+    fetchLinkedDatasets();
+  }, [numericId, sync, fetchLogs, fetchRecords, fetchLinkedDatasets]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
@@ -70,19 +91,39 @@ export default function DataSourceDetail() {
       else message.error(data.error || "Import failed");
       fetchLogs(numericId);
       fetchRecords(numericId);
+      fetchLinkedDatasets();
     } catch {
       message.error("Import failed");
     } finally {
       setImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
-  }, [numericId, fetchLogs, fetchRecords]);
+  }, [numericId, fetchLogs, fetchRecords, fetchLinkedDatasets]);
 
   const handleRefresh = useCallback(() => {
     fetchDatasourceById(numericId);
     fetchLogs(numericId);
     fetchRecords(numericId);
-  }, [numericId, fetchDatasourceById, fetchLogs, fetchRecords]);
+    fetchLinkedDatasets();
+  }, [numericId, fetchDatasourceById, fetchLogs, fetchRecords, fetchLinkedDatasets]);
+
+  const handleCreateDataset = useCallback(async () => {
+    setCreatingDataset(true);
+    try {
+      const result = await createFromDatasource(numericId);
+      if (result) {
+        message.success(`Dataset "${result.name}" created`);
+        fetchLinkedDatasets();
+        navigate(`/datasets/${result.id}`);
+      } else {
+        message.error("Failed to create dataset");
+      }
+    } catch {
+      message.error("Failed to create dataset");
+    } finally {
+      setCreatingDataset(false);
+    }
+  }, [numericId, createFromDatasource, fetchLinkedDatasets, navigate]);
 
   if (loading || !ds) return <Spin className="flex justify-center mt-20" size="large" />;
 
@@ -101,6 +142,14 @@ export default function DataSourceDetail() {
     render: (v: unknown) => (v == null ? "" : String(v)),
   }));
 
+  const datasetColumns = [
+    { title: "Name", dataIndex: "name", key: "name", render: (name: string, record: Dataset) => (
+      <Button type="link" className="p-0" onClick={() => navigate(`/datasets/${record.id}`)}>{name}</Button>
+    )},
+    { title: "Table", dataIndex: "table_name", key: "table_name" },
+    { title: "Rows", dataIndex: "row_count", key: "row_count", render: (v: number | null) => v != null ? v.toLocaleString() : "-" },
+  ];
+
   const tabItems = [
     {
       key: "records",
@@ -114,6 +163,30 @@ export default function DataSourceDetail() {
           size="small"
           scroll={{ x: "max-content" }}
         />
+      ),
+    },
+    {
+      key: "datasets",
+      label: `Datasets${linkedDatasets.length > 0 ? ` (${linkedDatasets.length})` : ""}`,
+      children: (
+        <div>
+          <Button
+            type="primary"
+            icon={<DatabaseOutlined />}
+            loading={creatingDataset}
+            onClick={handleCreateDataset}
+            className="mb-4"
+          >
+            Create Dataset from this DataSource
+          </Button>
+          <Table
+            dataSource={linkedDatasets}
+            columns={datasetColumns}
+            rowKey="id"
+            pagination={false}
+            size="small"
+          />
+        </div>
       ),
     },
     {

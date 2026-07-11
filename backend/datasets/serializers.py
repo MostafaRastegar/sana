@@ -9,6 +9,9 @@ class DatasetSerializer(serializers.ModelSerializer):
         source="created_by.username", read_only=True
     )
     column_count = serializers.SerializerMethodField()
+    datasource_name = serializers.CharField(
+        source="datasource.name", read_only=True, allow_null=True
+    )
 
     class Meta:
         model = Dataset
@@ -20,12 +23,14 @@ class DatasetSerializer(serializers.ModelSerializer):
             "columns",
             "row_count",
             "column_count",
+            "datasource",
+            "datasource_name",
             "created_by",
             "created_by_name",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_by", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_by", "created_at", "updated_at", "datasource_name"]
 
     def get_column_count(self, obj):
         """Get number of columns in this dataset."""

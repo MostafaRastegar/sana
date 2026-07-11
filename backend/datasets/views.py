@@ -8,6 +8,7 @@ from core.utils.pagination import CustomPagination
 from core.base_exception import DmvnException
 from .models import Dataset
 from .serializers import DatasetSerializer, DatasetDataSerializer
+from datasources.models import DataSource
 
 
 @api_view(["GET"])
@@ -73,7 +74,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
     from the dataset's backing database table.
     """
 
-    queryset = Dataset.objects.select_related("created_by").all()
+    queryset = Dataset.objects.select_related("created_by", "datasource").all()
     serializer_class = DatasetSerializer
     permission_classes = [ModelActionPermission]
     pagination_class = CustomPagination
@@ -88,6 +89,58 @@ class DatasetViewSet(viewsets.ModelViewSet):
         if name:
             queryset = queryset.filter(name__icontains=name)
         return queryset
+
+    @action(detail=True, methods=["post"])
+    def from_datasource(self, request, pk=None):
+        """
+        Create a Dataset from a DataSource's synced table.
+        POST /api/datasets/{datasource_id}/from_datasource/
+        """
+        try:
+            source = DataSource.objects.get(pk=pk)
+        except DataSource.DoesNotExist:
+            raise DmvnException(
+                "DataSource not found.",
+                status_code=404,
+                code="not_found",
+            )
+
+        from datasources.connectors import _auto_create_dataset, get_data
+
+        data = get_data(source)
+        columns = data.get("columns", [])
+
+        if not columns:
+            from datasources.connectors import sync_data
+            try:
+                result = sync_data(source)
+                columns = result.get("columns", [])
+            except Exception as exc:
+                raise DmvnException(
+                    f"Sync failed: {exc}",
+                    status_code=400,
+                    code="sync_failed",
+                )
+
+        if not columns:
+            raise DmvnException(
+                "No data columns found. Sync the datasource first.",
+                status_code=400,
+                code="no_data",
+            )
+
+        try:
+            _auto_create_dataset(source, columns)
+        except Exception as exc:
+            raise DmvnException(
+                f"Failed to create dataset: {exc}",
+                status_code=400,
+                code="create_failed",
+            )
+
+        ds = Dataset.objects.filter(datasource=source).first()
+        serializer = self.get_serializer(ds)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)

@@ -33,6 +33,11 @@ export const deleteDataset = async (id: number) => {
   await client.delete(`/datasets/${id}/`);
 };
 
+export const createDatasetFromDatasource = async (datasourceId: number) => {
+  const { data } = await client.post(`/datasets/${datasourceId}/from_datasource/`);
+  return data as import("../types").Dataset;
+};
+
 export const fetchTables = async () => {
   const { data } = await client.get("/tables/");
   return data as { tables: string[] };

@@ -12,6 +12,8 @@ export interface Dataset {
   columns: Column[];
   row_count: number | null;
   column_count: number;
+  datasource: number | null;
+  datasource_name: string | null;
   created_by: number;
   created_by_name: string;
   created_at: string;

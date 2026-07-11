@@ -19,6 +19,14 @@ class Dataset(models.Model):
         help_text=_("List of {name, type, label} column definitions"),
     )
     row_count = models.IntegerField(null=True, blank=True, verbose_name=_("Row Count"))
+    datasource = models.ForeignKey(
+        "datasources.DataSource",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="datasets",
+        verbose_name=_("Data Source"),
+    )
     created_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,

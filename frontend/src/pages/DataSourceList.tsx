@@ -3,9 +3,10 @@ import {
   Table, Button, Modal, Input, Select, Tag, Space, message, Popconfirm, Typography,
 } from "antd";
 import {
-  PlusOutlined, EditOutlined, DeleteOutlined, ApiOutlined, SyncOutlined, UploadOutlined,
+  PlusOutlined, EditOutlined, DeleteOutlined, ApiOutlined, SyncOutlined, UploadOutlined, DatabaseOutlined,
 } from "@ant-design/icons";
 import { useDatasourceStore } from "../store/datasourceStore";
+import { useDatasetStore } from "../store/datasetStore";
 import type { DataSource, SourceType } from "../types";
 
 const sourceTypeColors: Record<string, string> = {
@@ -52,6 +53,7 @@ const configFields: Record<SourceType, { key: string; label: string }[]> = {
 
 export default function DataSourceList() {
   const { datasources, loading, fetchDatasources, createDatasource, updateDatasource, deleteDatasource, testConnection, error } = useDatasourceStore();
+  const { createFromDatasource } = useDatasetStore();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<DataSource | null>(null);
   const [saving, setSaving] = useState(false);
@@ -89,13 +91,17 @@ export default function DataSourceList() {
     setSaving(true);
     try {
       if (sourceType === "csv" && csvFile && !editing) {
-        // CSV upload via FormData
-        const fd = new FormData();
-        fd.append("name", name);
-        fd.append("source_type", sourceType);
-        fd.append("sync_schedule", syncSchedule);
-        fd.append("file", csvFile);
-        await createDatasource(fd as unknown as Record<string, unknown>);
+        // Two-step process for CSV:
+        // 1. Create datasource via JSON (no file — avoids multipart issues with axios)
+        const ds = await createDatasource({
+          name,
+          source_type: sourceType,
+          sync_schedule: syncSchedule,
+        } as Partial<DataSource>);
+        if (!ds) throw new Error("Failed to create datasource");
+        // 2. Upload CSV file via the dedicated import-csv endpoint (has MultiPartParser)
+        const { uploadCsvFile } = await import("../api/datasources");
+        await uploadCsvFile(ds.id, csvFile);
       } else {
         const payload = {
           name,
@@ -131,6 +137,17 @@ export default function DataSourceList() {
     const result = await testConnection(id);
     if (result) {
       message[result.success ? "success" : "error"](result.message);
+    }
+  };
+
+  const handleCreateDataset = async (id: number) => {
+    try {
+      const result = await useDatasetStore.getState().createFromDatasource(id);
+      if (result) {
+        message.success(`Dataset "${result.name}" created`);
+      }
+    } catch {
+      message.error("Failed to create dataset");
     }
   };
 
@@ -171,6 +188,9 @@ export default function DataSourceList() {
           </Button>
           <Button size="small" icon={<SyncOutlined />} onClick={() => useDatasourceStore.getState().sync(record.id)}>
             Sync
+          </Button>
+          <Button size="small" icon={<DatabaseOutlined />} onClick={() => handleCreateDataset(record.id)}>
+            Dataset
           </Button>
           <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(record)} />
           <Popconfirm title="Delete?" onConfirm={() => handleDelete(record.id)}>

@@ -14,6 +14,7 @@ interface DatasetState {
   createDataset: (dataset: Partial<Dataset>) => Promise<Dataset | undefined>;
   updateDataset: (id: number, dataset: Partial<Dataset>) => Promise<Dataset | undefined>;
   deleteDataset: (id: number) => Promise<void>;
+  createFromDatasource: (datasourceId: number) => Promise<Dataset | undefined>;
   clearError: () => void;
 }
 
@@ -88,6 +89,21 @@ export const useDatasetStore = create<DatasetState>()((set) => ({
         datasets: state.datasets.filter((d) => d.id !== id),
         loading: false,
       }));
+    } catch (error) {
+      set({ error: (error as Error).message, loading: false });
+    }
+  },
+
+  createFromDatasource: async (datasourceId) => {
+    set({ loading: true, error: null });
+    try {
+      const data = await api.createDatasetFromDatasource(datasourceId);
+      set((state) => ({
+        datasets: [...state.datasets, data],
+        currentDataset: data,
+        loading: false,
+      }));
+      return data;
     } catch (error) {
       set({ error: (error as Error).message, loading: false });
     }

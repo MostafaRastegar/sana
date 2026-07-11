@@ -1,9 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
-import { Table, Button, Spin, Alert, Space, Modal, Input, Select, message } from "antd";
-import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Table, Button, Spin, Alert, Space, Modal, Input, Select, message, Tag } from "antd";
+import { PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined, DatabaseOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useDatasetStore } from "../store/datasetStore";
 import { fetchTables, detectTableColumns } from "../api/datasets";
+import { useDatasourceStore } from "../store/datasourceStore";
+import type { DataSource } from "../types";
 
 export default function DatasetList() {
   const navigate = useNavigate();
@@ -17,6 +19,18 @@ export default function DatasetList() {
   const [tableOptions, setTableOptions] = useState<string[]>([]);
   const [columnsLoading, setColumnsLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [datasourceId, setDatasourceId] = useState<number | null>(null);
+  const [datasourceOptions, setDatasourceOptions] = useState<{ id: number; name: string; source_type: string }[]>([]);
+
+  const loadDatasources = useCallback(async () => {
+    try {
+      const res = await useDatasourceStore.getState().fetchDatasources();
+      const state = useDatasourceStore.getState();
+      setDatasourceOptions(state.datasources.map((ds) => ({ id: ds.id, name: ds.name, source_type: ds.source_type })));
+    } catch {
+      // silently fail
+    }
+  }, []);
 
   const loadTables = useCallback(async () => {
     try {
@@ -30,7 +44,8 @@ export default function DatasetList() {
   useEffect(() => {
     fetchDatasets();
     loadTables();
-  }, [fetchDatasets, loadTables]);
+    loadDatasources();
+  }, [fetchDatasets, loadTables, loadDatasources]);
 
   const openCreate = () => {
     setEditingDataset(null);
@@ -38,6 +53,7 @@ export default function DatasetList() {
     setDescription("");
     setTableName("");
     setDetectedColumns([]);
+    setDatasourceId(null);
     setModalOpen(true);
   };
 
@@ -47,6 +63,7 @@ export default function DatasetList() {
     setDescription(d.description);
     setTableName(d.table_name);
     setDetectedColumns([]);
+    setDatasourceId(null);
     setModalOpen(true);
   };
 
@@ -72,12 +89,15 @@ export default function DatasetList() {
     }
     setSaving(true);
     try {
-      const payload = {
+      const payload: Record<string, unknown> = {
         name,
         description,
         table_name: tableName,
         columns: detectedColumns.length > 0 ? detectedColumns : undefined,
       };
+      if (datasourceId) {
+        payload.datasource = datasourceId;
+      }
       if (editingDataset) {
         await updateDataset(editingDataset.id, payload);
         message.success("Dataset updated");
@@ -122,6 +142,12 @@ export default function DatasetList() {
     { title: "Columns", dataIndex: "column_count", key: "column_count" },
     { title: "Row Count", dataIndex: "row_count", key: "row_count" },
     {
+      title: "Data Source",
+      dataIndex: "datasource_name",
+      key: "datasource_name",
+      render: (v: string | null) => v ? <Tag icon={<DatabaseOutlined />} color="blue">{v}</Tag> : "-",
+    },
+    {
       title: "Actions",
       key: "actions",
       render: (_: unknown, record: { id: number; name: string; description: string; table_name: string }) => (
@@ -164,6 +190,22 @@ export default function DatasetList() {
           <div>
             <label className="block mb-1 text-sm font-medium">Description</label>
             <Input.TextArea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional description" rows={2} />
+          </div>
+          <div>
+            <label className="block mb-1 text-sm font-medium">Data Source (optional)</label>
+            <Select
+              className="w-full"
+              value={datasourceId}
+              onChange={(v) => setDatasourceId(v)}
+              placeholder="Link to a data source"
+              allowClear
+            >
+              {datasourceOptions.map((ds) => (
+                <Select.Option key={ds.id} value={ds.id}>
+                  <DatabaseOutlined className="mr-1" /> {ds.name} ({ds.source_type})
+                </Select.Option>
+              ))}
+            </Select>
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium">Table</label>
