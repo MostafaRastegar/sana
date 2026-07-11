@@ -92,3 +92,49 @@ class DashboardPermission(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.dashboard.name} ({self.permission})"
+
+
+class DashboardTemplate(models.Model):
+    """Pre-built dashboard template for quick-start."""
+    CATEGORY_CHOICES = [
+        ("sales", _("Sales")),
+        ("marketing", _("Marketing")),
+        ("finance", _("Finance")),
+        ("operations", _("Operations")),
+        ("custom", _("Custom")),
+    ]
+
+    name = models.CharField(max_length=100, verbose_name=_("Name"))
+    description = models.TextField(blank=True, verbose_name=_("Description"))
+    category = models.CharField(
+        max_length=20, choices=CATEGORY_CHOICES, default="custom",
+        verbose_name=_("Category"),
+    )
+    layout = models.JSONField(
+        null=True, blank=True, verbose_name=_("Layout"),
+        help_text=_("Dashboard layout: {charts: [{chart_id, x, y, w, h}]}"),
+    )
+    chart_configs = models.JSONField(
+        default=list, blank=True, verbose_name=_("Chart Configs"),
+        help_text=_("List of partial ChartConfig objects"),
+    )
+    preview_image = models.ImageField(
+        upload_to="templates/", null=True, blank=True,
+        verbose_name=_("Preview Image"),
+    )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        verbose_name=_("Created By"),
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Created At"))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=_("Updated At"))
+
+    class Meta:
+        verbose_name = _("Dashboard Template")
+        verbose_name_plural = _("Dashboard Templates")
+        ordering = ["category", "name"]
+
+    def __str__(self):
+        return f"{self.name} ({self.get_category_display()})"

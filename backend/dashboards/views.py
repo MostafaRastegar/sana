@@ -7,8 +7,14 @@ from django.db.models import Q
 from core.permissions import ModelActionPermission
 from core.utils.pagination import CustomPagination
 from core.base_exception import DmvnException
-from .models import Dashboard, DashboardPermission
-from .serializers import DashboardSerializer, DashboardRenderSerializer, DashboardPermissionSerializer, UserSearchSerializer
+from .models import Dashboard, DashboardPermission, DashboardTemplate
+from .serializers import (
+    DashboardSerializer,
+    DashboardRenderSerializer,
+    DashboardPermissionSerializer,
+    DashboardTemplateSerializer,
+    UserSearchSerializer,
+)
 
 User = get_user_model()
 
@@ -250,6 +256,42 @@ class DashboardViewSet(viewsets.ModelViewSet):
                 raise DmvnException(
                     "Permission not found.", status_code=404, code="not_found"
                 )
+
+
+class DashboardTemplateViewSet(viewsets.ModelViewSet):
+    """CRUD for dashboard templates."""
+
+    queryset = DashboardTemplate.objects.all()
+    serializer_class = DashboardTemplateSerializer
+    permission_classes = [ModelActionPermission]
+    pagination_class = CustomPagination
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["name", "description"]
+    ordering_fields = ["name", "category", "created_at"]
+    ordering = ["category", "name"]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        cat = self.request.query_params.get("category")
+        if cat:
+            qs = qs.filter(category=cat)
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    @action(detail=True, methods=["post"])
+    def instantiate(self, request, pk=None):
+        """Create a new dashboard from this template."""
+        template = self.get_object()
+        db = Dashboard.objects.create(
+            name=request.data.get("name", template.name),
+            description=template.description,
+            layout=template.layout,
+            created_by=request.user,
+        )
+        serializer = DashboardSerializer(db, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class UserSearchView(viewsets.GenericViewSet):

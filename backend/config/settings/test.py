@@ -6,6 +6,9 @@ DEBUG = False
 
 SECRET_KEY = 'django-insecure-test-key'
 
+# Encryption key for tests (32 url-safe base64 bytes)
+DATASOURCE_ENCRYPTION_KEY = 'SM7r6acF7JUE3NUTZ7TM0Vvi_Kjt6mDrnQ-A6BNF20Y='
+
 # Test database (SQLite for speed)
 DATABASES = {
     'default': {
@@ -14,7 +17,6 @@ DATABASES = {
     }
 }
 
-# Disable migrations for faster tests
 USE_TZ = True
 
 # Test-specific settings

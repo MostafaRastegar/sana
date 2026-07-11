@@ -26,6 +26,7 @@ class ChartSerializer(serializers.ModelSerializer):
             "chart_type",
             "chart_type_display",
             "config",
+            "drill_down_config",
             "created_by",
             "created_by_name",
             "created_at",

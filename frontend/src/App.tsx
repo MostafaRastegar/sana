@@ -10,8 +10,11 @@ import ChartList from "./pages/ChartList";
 import ChartBuilder from "./pages/ChartBuilder";
 import DatasetList from "./pages/DatasetList";
 import DatasetView from "./pages/DatasetView";
+import DataSourceList from "./pages/DataSourceList";
+import DataSourceDetail from "./pages/DataSourceDetail";
 import AlertList from "./pages/AlertList";
 import AlertDetail from "./pages/AlertDetail";
+import ReportsPage from "./pages/ReportsPage";
 import SQLEditor from "./pages/SQLEditor";
 import { isAuthenticated } from "./api/client";
 
@@ -49,8 +52,11 @@ const routes: RouteObject[] = [
       { path: "charts/:id", element: <ChartBuilder /> },
       { path: "datasets", element: <DatasetList /> },
       { path: "datasets/:id", element: <DatasetView /> },
+      { path: "datasources", element: <DataSourceList /> },
+      { path: "datasources/:id", element: <DataSourceDetail /> },
       { path: "alerts", element: <AlertList /> },
       { path: "alerts/:id", element: <AlertDetail /> },
+      { path: "reports", element: <ReportsPage /> },
       { path: "sql", element: <SQLEditor /> },
     ],
   },

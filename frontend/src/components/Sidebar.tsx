@@ -6,6 +6,8 @@ import {
   TableOutlined,
   CodeOutlined,
   BellOutlined,
+  ScheduleOutlined,
+  DatabaseOutlined,
 } from "@ant-design/icons";
 import { useUIStore } from "../store/uiStore";
 
@@ -33,9 +35,19 @@ export default function Sidebar() {
       label: "Datasets",
     },
     {
+      key: "/reports",
+      icon: <ScheduleOutlined />,
+      label: "Reports",
+    },
+    {
       key: "/alerts",
       icon: <BellOutlined />,
       label: "Alerts",
+    },
+    {
+      key: "/datasources",
+      icon: <DatabaseOutlined />,
+      label: "Data Sources",
     },
     {
       key: "/sql",

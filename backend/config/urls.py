@@ -66,6 +66,8 @@ urlpatterns = [
     path("api/", include("dashboards.urls")),
     path("api/", include("query.urls")),
     path("api/", include("alerts.urls")),
+    path("api/", include("reports.urls")),
+    path("api/", include("datasources.urls")),
     # Favicon serving for browsers that look for /favicon.ico
     path("favicon.ico", favicon_view, name="favicon"),
 ]

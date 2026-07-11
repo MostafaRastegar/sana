@@ -1,4 +1,5 @@
-from rest_framework import viewsets, status, filters
+import json
+from rest_framework import viewsets, status, filters as drf_filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import connection
@@ -21,7 +22,7 @@ class ChartViewSet(viewsets.ModelViewSet):
     serializer_class = ChartSerializer
     permission_classes = [ModelActionPermission]
     pagination_class = CustomPagination
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [drf_filters.SearchFilter, drf_filters.OrderingFilter]
     search_fields = ["name", "description"]
     ordering_fields = ["name", "created_at"]
     ordering = ["-created_at"]
@@ -281,3 +282,66 @@ class ChartViewSet(viewsets.ModelViewSet):
         self.chart_type = chart_type
         sql, params = self._build_chart_sql(config, table_name)
         return Response(self._execute_chart_sql(sql, params, chart_type, config))
+
+    @action(detail=True, methods=["get"])
+    def drill_down(self, request, pk=None):
+        """Drill down into chart data by filtering on a specific column value.
+        Query params: column, value, target_chart_id (optional).
+        If target_chart_id provided, returns data for that chart filtered by column=value.
+        Otherwise returns raw rows from the dataset filtered by column=value.
+        """
+        chart = self.get_object()
+        column = request.query_params.get("column")
+        value = request.query_params.get("value")
+        if not column or value is None:
+            return Response(
+                {"error": "column and value query params required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        dataset = chart.dataset
+        table_name = dataset.table_name
+
+        target_chart_id = request.query_params.get("target_chart_id")
+        if target_chart_id:
+            try:
+                target = Chart.objects.get(id=target_chart_id)
+            except Chart.DoesNotExist:
+                return Response(
+                    {"error": "Target chart not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            config = dict(target.config)
+            # Add drill-down filter
+            filters = config.get("filters", [])
+            if not isinstance(filters, list):
+                filters = []
+            filters.append({"column": column, "operator": "eq", "value": value})
+            config["filters"] = filters
+            sql, params = self._build_chart_sql(config, target.dataset.table_name)
+            return Response(
+                self._execute_chart_sql(sql, params, target.chart_type, config)
+            )
+
+        # No target: return raw rows filtered by column=value
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name=%s",
+                [table_name],
+            )
+            if not cursor.fetchone():
+                raise DmvnException(
+                    f"Table '{table_name}' does not exist.",
+                    status_code=404,
+                    code="table_not_found",
+                )
+
+        sql = f'SELECT * FROM "{table_name}" WHERE "{column}" = %s'
+        params = [value]
+        with connection.cursor() as cursor:
+            cursor.execute(sql, params)
+            columns = [col[0] for col in cursor.description]
+            rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        col_meta = [{"name": col, "type": "string", "label": col} for col in columns]
+        return Response({"columns": col_meta, "rows": rows})

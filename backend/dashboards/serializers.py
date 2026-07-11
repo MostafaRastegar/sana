@@ -1,8 +1,6 @@
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Dashboard, DashboardPermission
-
-User = get_user_model()
+from rest_framework import serializers
+from .models import Dashboard, DashboardPermission, DashboardTemplate
 
 
 class DashboardSerializer(serializers.ModelSerializer):
@@ -12,8 +10,8 @@ class DashboardSerializer(serializers.ModelSerializer):
         source="created_by.username", read_only=True
     )
     chart_count = serializers.SerializerMethodField()
-    is_owner = serializers.SerializerMethodField()
     user_permission = serializers.SerializerMethodField()
+    is_owner = serializers.SerializerMethodField()
 
     class Meta:
         model = Dashboard
@@ -24,18 +22,17 @@ class DashboardSerializer(serializers.ModelSerializer):
             "layout",
             "filters",
             "is_public",
-            "chart_count",
             "is_owner",
             "user_permission",
             "created_by",
             "created_by_name",
+            "chart_count",
             "created_at",
             "updated_at",
         ]
         read_only_fields = ["id", "created_by", "created_at", "updated_at"]
 
     def get_chart_count(self, obj):
-        """Get number of charts in this dashboard."""
         if obj.layout and isinstance(obj.layout, dict):
             charts = obj.layout.get("charts", [])
             return len(charts) if isinstance(charts, list) else 0
@@ -53,37 +50,23 @@ class DashboardSerializer(serializers.ModelSerializer):
             return None
         if obj.created_by == request.user:
             return "admin"
-        perm = DashboardPermission.objects.filter(
-            dashboard=obj, user=request.user
-        ).first()
-        return perm.permission if perm else None
-
-    def validate_name(self, value):
-        if len(value) < 2:
-            raise serializers.ValidationError(
-                "Dashboard name must be at least 2 characters long."
+        try:
+            perm = DashboardPermission.objects.get(
+                dashboard=obj, user=request.user
             )
-        return value
+            return perm.permission
+        except DashboardPermission.DoesNotExist:
+            return None
 
     def create(self, validated_data):
         validated_data["created_by"] = self.context["request"].user
         return super().create(validated_data)
 
 
-class DashboardRenderSerializer(serializers.Serializer):
-    """Serializer for a fully rendered dashboard with chart data."""
-
-    id = serializers.IntegerField()
-    name = serializers.CharField()
-    description = serializers.CharField()
-    layout = serializers.DictField(allow_null=True)
-    charts_data = serializers.ListField(child=serializers.DictField())
-
-
 class DashboardPermissionSerializer(serializers.ModelSerializer):
     """Serializer for DashboardPermission model."""
 
-    user_name = serializers.CharField(source="user.username", read_only=True)
+    username = serializers.CharField(source="user.username", read_only=True)
 
     class Meta:
         model = DashboardPermission
@@ -91,21 +74,52 @@ class DashboardPermissionSerializer(serializers.ModelSerializer):
             "id",
             "dashboard",
             "user",
-            "user_name",
+            "username",
             "permission",
             "shared_by",
             "created_at",
         ]
-        read_only_fields = ["id", "dashboard", "shared_by", "created_at"]
+        read_only_fields = ["id", "shared_by", "created_at"]
 
     def create(self, validated_data):
         validated_data["shared_by"] = self.context["request"].user
         return super().create(validated_data)
 
 
+class DashboardRenderSerializer(serializers.Serializer):
+    """Serializer for rendered dashboard with chart data."""
+
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    description = serializers.CharField()
+    layout = serializers.JSONField()
+    charts_data = serializers.ListField()
+    filters = serializers.JSONField()
+
+
 class UserSearchSerializer(serializers.ModelSerializer):
-    """Minimal user serializer for sharing search."""
+    """Serializer for user search results."""
 
     class Meta:
-        model = User
+        model = get_user_model()
         fields = ["id", "username", "email"]
+
+
+class DashboardTemplateSerializer(serializers.ModelSerializer):
+    """Serializer for DashboardTemplate model."""
+
+    class Meta:
+        model = DashboardTemplate
+        fields = [
+            "id",
+            "name",
+            "description",
+            "category",
+            "layout",
+            "chart_configs",
+            "preview_image",
+            "created_by",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_by", "created_at", "updated_at"]

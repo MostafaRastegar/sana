@@ -183,6 +183,38 @@ export type AlertCondition = "above" | "below" | "equals" | "change_percent";
 export type AlertAggregation = "sum" | "avg" | "count" | "min" | "max";
 export type AlertInterval = "hourly" | "daily" | "weekly" | "monthly";
 
+export type SourceType = "postgresql" | "mysql" | "sqlite" | "api" | "csv";
+
+export type DataSourceStatus = "active" | "error" | "syncing";
+
+export interface DataSource {
+  id: number;
+  name: string;
+  source_type: SourceType;
+  source_type_display?: string;
+  connection_config: Record<string, unknown>;
+  sync_schedule: string;
+  is_active: boolean;
+  last_synced: string | null;
+  status: DataSourceStatus;
+  error_message: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type SyncLogStatus = "running" | "success" | "failed";
+
+export interface SyncLog {
+  id: number;
+  source: number;
+  started_at: string;
+  finished_at: string | null;
+  status: SyncLogStatus;
+  rows_imported: number;
+  error_message: string;
+  created_at: string;
+}
+
 export interface DataAlert {
   id: number;
   name: string;
@@ -226,4 +258,46 @@ export interface AlertStats {
   total_alerts: number;
   active_alerts: number;
   triggered_last_24h: number;
+}
+
+export type ReportFrequency = "daily" | "weekly" | "monthly";
+export type ReportFormat = "pdf" | "email_html";
+
+export interface ReportRecipient {
+  id: number;
+  email: string;
+}
+
+export interface ReportHistory {
+  id: number;
+  report: number;
+  sent_at: string;
+  recipients_count: number;
+  format: ReportFormat;
+  status: "sent" | "failed";
+  error_message?: string;
+}
+
+export interface ScheduledReport {
+  id: number;
+  name: string;
+  description: string;
+  dashboard: number;
+  dashboard_name: string;
+  format: ReportFormat;
+  frequency: ReportFrequency;
+  day_of_week: number | null;
+  day_of_month: number | null;
+  time: string;
+  timezone: string;
+  recipients: number[];
+  recipients_count: number;
+  is_active: boolean;
+  last_sent: string | null;
+  next_run: string | null;
+  created_by: number;
+  created_by_name: string;
+  created_at: string;
+  updated_at: string;
+  history: ReportHistory[];
 }

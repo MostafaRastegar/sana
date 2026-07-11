@@ -40,7 +40,6 @@ export default function DashboardView() {
   const [filterManagerOpen, setFilterManagerOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const chartRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
   useEffect(() => {
     const handleResize = () => setWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);

@@ -80,6 +80,8 @@ INSTALLED_APPS = [
     "dashboards",
     "query",
     "alerts",
+    "reports",
+    "datasources",
 ]
 
 MIDDLEWARE = [
@@ -325,6 +327,26 @@ register(
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_ACCEPT_CONTENT = ["json"]
+
+# Data source encryption key (Fernet 32-byte urlsafe-base64)
+DATASOURCE_ENCRYPTION_KEY = os.environ.get(
+    "DATASOURCE_ENCRYPTION_KEY",
+    "dykR7b9exTCqrIEN_vpvZdepJMN_qzpp7eS9ZdLW1RQ=",
+)
+
+# Reports periodic task
+CELERY_BEAT_SCHEDULE = {
+    "generate-scheduled-reports": {
+        "task": "reports.tasks.generate_scheduled_reports",
+        "schedule": 3600.0,  # every hour
+        "options": {"queue": "celery"},
+    },
+    "sync-datasources": {
+        "task": "datasources.tasks.sync_all_due_sources",
+        "schedule": 600.0,  # every 10 minutes
+        "options": {"queue": "celery"},
+    },
+}
 
 # Celery task routing - dedicated queue for activity logging
 CELERY_TASK_ROUTES = {
