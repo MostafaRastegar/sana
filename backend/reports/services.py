@@ -92,20 +92,31 @@ def generate_report(report):
     charts_data = []
 
     if dashboard.layout and "charts" in dashboard.layout:
+        from charts.models import Chart
+
+        chart_ids = []
+        chart_items = []
         for item in dashboard.layout["charts"]:
             chart_id = item.get("chart_id") or item.get("chartId")
             if chart_id:
-                from charts.models import Chart
-                try:
-                    chart = Chart.objects.get(id=chart_id)
-                    chart_data = _fetch_chart_data(chart)
-                    charts_data.append({
-                        "chart": chart,
-                        "chart_data": chart_data,
-                        "layout": item,
-                    })
-                except Chart.DoesNotExist:
-                    pass
+                chart_ids.append(chart_id)
+                chart_items.append(item)
+
+        charts_map: dict[int, Chart] = {}
+        if chart_ids:
+            for chart in Chart.objects.select_related("dataset").filter(id__in=chart_ids):
+                charts_map[chart.id] = chart
+
+        for item in chart_items:
+            chart_id = item.get("chart_id") or item.get("chartId")
+            chart = charts_map.get(chart_id)
+            if chart:
+                chart_data = _fetch_chart_data(chart)
+                charts_data.append({
+                    "chart": chart,
+                    "chart_data": chart_data,
+                    "layout": item,
+                })
 
     html_content = render_to_string("reports/dashboard_report.html", {
         "report_name": report.name,

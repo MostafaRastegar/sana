@@ -261,7 +261,7 @@ class DashboardViewSet(viewsets.ModelViewSet):
 class DashboardTemplateViewSet(viewsets.ModelViewSet):
     """CRUD for dashboard templates."""
 
-    queryset = DashboardTemplate.objects.all()
+    queryset = DashboardTemplate.objects.select_related("created_by").all()
     serializer_class = DashboardTemplateSerializer
     permission_classes = [ModelActionPermission]
     pagination_class = CustomPagination
