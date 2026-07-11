@@ -34,3 +34,12 @@ export const updateChart = async (id: number, chart: Partial<Chart>) => {
 export const deleteChart = async (id: number) => {
   await client.delete(`/charts/${id}/`);
 };
+
+export const fetchChartDrillDown = async (chartId: number, column: string, value: string, targetChartId?: number) => {
+  const params: Record<string, string> = { column, value };
+  if (targetChartId !== undefined) {
+    params.target_chart_id = String(targetChartId);
+  }
+  const { data } = await client.get(`/charts/${chartId}/drill_down/`, { params });
+  return data as { columns: { name: string; type: string; label: string }[]; rows: Record<string, unknown>[]; chart_type?: string; config?: Record<string, unknown> };
+};

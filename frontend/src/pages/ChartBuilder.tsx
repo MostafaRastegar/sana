@@ -10,7 +10,7 @@ import ColumnMapper from "../components/charts/ColumnMapper";
 import FilterBuilder from "../components/charts/FilterBuilder";
 import { buildEChartsOption } from "../utils/chartOptions";
 import { previewChartData } from "../api/charts";
-import type { ChartType, ChartConfig, Column, Filter, KPIChartConfig } from "../types";
+import type { ChartType, ChartConfig, Column, Filter, KPIChartConfig, DrillDownConfig } from "../types";
 
 const AGGREGATE_REQUIRED: ChartType[] = ["pie"];
 const AGGREGATE_DISABLED: ChartType[] = ["scatter", "heatmap"];
@@ -29,10 +29,12 @@ export default function ChartBuilder() {
   const [groupBy, setGroupBy] = useState<string | undefined>();
   const [aggregate, setAggregate] = useState<string>("none");
   const [filters, setFilters] = useState<Filter[]>([]);
+  const [drillDownConfig, setDrillDownConfig] = useState<DrillDownConfig>({ enabled: false });
   const [chartData, setChartData] = useState<Record<string, unknown> | null>(null);
   const [dataLoading, setDataLoading] = useState(false);
   const [dataError, setDataError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const { charts } = useChartStore();
 
   const isEditing = !!id;
   const selectedDatasetObj = datasets.find((d) => d.id === selectedDataset);
@@ -56,6 +58,7 @@ export default function ChartBuilder() {
       setGroupBy(currentChart.config.groupBy);
       setAggregate(currentChart.config.aggregate || "none");
       setFilters(currentChart.config.filters || []);
+      setDrillDownConfig(currentChart.drill_down_config || { enabled: false });
     }
   }, [isEditing, currentChart]);
 
@@ -127,6 +130,7 @@ export default function ChartBuilder() {
         dataset: selectedDataset,
         chart_type: chartType,
         config: chartConfig,
+        drill_down_config: drillDownConfig.enabled ? drillDownConfig : null,
       };
       if (isEditing && id) {
         await updateChart(parseInt(id), payload);
@@ -325,6 +329,69 @@ export default function ChartBuilder() {
               />
             </Card>
           )}
+          <Card title="Drill-Down Configuration">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="drill-enabled"
+                  checked={drillDownConfig.enabled}
+                  onChange={(e) => setDrillDownConfig((p) => ({ ...p, enabled: e.target.checked }))}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="drill-enabled" className="text-sm font-medium">Enable Drill-Down</label>
+              </div>
+              {drillDownConfig.enabled && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Drill Column</label>
+                    <Select
+                      value={drillDownConfig.drill_column || undefined}
+                      onChange={(v) => setDrillDownConfig((p) => ({ ...p, drill_column: v }))}
+                      placeholder="Select column (default: series name)"
+                      className="w-full"
+                      allowClear
+                      options={columns.map((c: Column) => ({ value: c.name, label: c.name }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Target Chart</label>
+                    <Select
+                      value={drillDownConfig.target_chart ?? undefined}
+                      onChange={(v) => setDrillDownConfig((p) => ({ ...p, target_chart: v ?? null }))}
+                      placeholder="Optional: navigate to this chart"
+                      className="w-full"
+                      allowClear
+                      options={charts.map((c) => ({ value: c.id, label: c.name }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Target Dashboard</label>
+                    <Select
+                      value={drillDownConfig.target_dashboard ?? undefined}
+                      onChange={(v) => setDrillDownConfig((p) => ({ ...p, target_dashboard: v ?? null }))}
+                      placeholder="Optional: navigate to this dashboard"
+                      className="w-full"
+                      allowClear
+                      options={[]}
+                      disabled
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Dashboard list (coming soon)</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="drill-pass-filters"
+                      checked={drillDownConfig.pass_filters ?? false}
+                      onChange={(e) => setDrillDownConfig((p) => ({ ...p, pass_filters: e.target.checked }))}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="drill-pass-filters" className="text-sm font-medium">Pass Global Filters</label>
+                  </div>
+                </>
+              )}
+            </div>
+          </Card>
           {(chartType === "kpi" ? selectedDataset && yAxis : selectedDataset && xAxis && yAxis) && (
             <Button
               type="default"

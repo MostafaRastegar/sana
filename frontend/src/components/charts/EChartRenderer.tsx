@@ -1,5 +1,6 @@
 import ReactECharts from "echarts-for-react";
 import clsx from "clsx";
+import type { EChartsReactProps } from "echarts-for-react";
 
 interface EChartRendererProps {
   option: Record<string, unknown>;
@@ -7,6 +8,7 @@ interface EChartRendererProps {
   width?: number | string;
   loading?: boolean;
   className?: string;
+  onEvents?: EChartsReactProps["onEvents"];
 }
 
 export default function EChartRenderer({
@@ -15,6 +17,7 @@ export default function EChartRenderer({
   width = "100%",
   loading = false,
   className,
+  onEvents,
 }: EChartRendererProps) {
   const defaultOption = {
     title: { text: "No data" },
@@ -34,6 +37,7 @@ export default function EChartRenderer({
         showLoading={loading}
         notMerge={true}
         lazyUpdate={true}
+        onEvents={onEvents}
       />
     </div>
   );

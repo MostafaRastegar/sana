@@ -81,6 +81,14 @@ export interface ChartConfig {
   kpi_thresholds?: KPIThresholds;
 }
 
+export interface DrillDownConfig {
+  enabled: boolean;
+  target_chart?: number | null;
+  target_dashboard?: number | null;
+  drill_column?: string | null;
+  pass_filters?: boolean;
+}
+
 export interface Chart {
   id: number;
   name: string;
@@ -90,6 +98,7 @@ export interface Chart {
   chart_type: ChartType;
   chart_type_display: string;
   config: ChartConfig;
+  drill_down_config?: DrillDownConfig | null;
   created_by: number;
   created_by_name: string;
   created_at: string;

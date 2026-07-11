@@ -311,7 +311,12 @@ class ChartViewSet(viewsets.ModelViewSet):
                     {"error": "Target chart not found"},
                     status=status.HTTP_404_NOT_FOUND,
                 )
+            # Inherit axes from source chart if target has none
+            source_config = chart.config
             config = dict(target.config)
+            config.setdefault("xAxis", source_config.get("xAxis") or source_config.get("x_axis"))
+            config.setdefault("yAxis", source_config.get("yAxis") or source_config.get("y_axis"))
+            config["chart_type"] = target.chart_type
             # Add drill-down filter
             filters = config.get("filters", [])
             if not isinstance(filters, list):

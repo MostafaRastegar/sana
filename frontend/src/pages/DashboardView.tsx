@@ -7,8 +7,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import GridLayout from "react-grid-layout";
 import type { Layout, LayoutItem } from "react-grid-layout";
 import EChartRenderer from "../components/charts/EChartRenderer";
+import DrillDownBreadcrumb from "../components/charts/DrillDownBreadcrumb";
 import KPIWidget from "../components/charts/KPIWidget";
 import ChartExportButton from "../components/charts/ChartExportButton";
+import { useDrillDown } from "../components/charts/DrillDownHandler";
 import { buildEChartsOption } from "../utils/chartOptions";
 import { fetchChartData } from "../api/charts";
 import { DashboardFilters } from "../components/dashboard/DashboardFilters";
@@ -21,6 +23,108 @@ interface ChartWithData {
   chart: Chart;
   data: ChartData | null;
   loading: boolean;
+  drillData?: ChartData | null;
+}
+
+interface DrillStep {
+  column: string;
+  value: string;
+  chartId: number;
+  label: string;
+}
+
+function ChartDrillWrapper({
+  chartId,
+  chartInfo,
+  dataWrapper,
+  isEditing,
+  canEdit,
+  onRemove,
+  onDrill,
+  onDrillStep,
+}: {
+  chartId: number;
+  chartInfo: Chart | undefined;
+  dataWrapper: ChartWithData | undefined;
+  isEditing: boolean;
+  canEdit: boolean;
+  onRemove: (id: string) => void;
+  onDrill: (chartId: number, data: ChartData) => void;
+  onDrillStep: (step: DrillStep) => void;
+}) {
+  const chartOption = dataWrapper?.data
+    ? buildEChartsOption(dataWrapper.data.chart_type, dataWrapper.data)
+    : {};
+
+  const isKpi = chartInfo?.chart_type === "kpi";
+  const kpiValue = isKpi && dataWrapper?.data?.rows?.[0]
+    ? Object.values(dataWrapper.data.rows[0])[0] as number | string
+    : null;
+  const cfg = chartInfo?.config as Record<string, unknown> | undefined;
+  const kpiConfig = {
+    format: (cfg?.kpi_format as "number" | "currency" | "percentage") || "number",
+    thresholds: cfg?.kpi_thresholds as { warning: number; critical: number; reversed?: boolean } | undefined,
+    comparison: cfg?.kpi_comparison as { type: "previous_period" | "previous_year" | "static"; value?: number } | undefined,
+  };
+
+  const chartConfig = chartInfo?.config
+    ? { xAxis: chartInfo.config.xAxis || "", yAxis: (chartInfo.config as any).yAxis || "" }
+    : { xAxis: "", yAxis: "" };
+  const { chartClickEvents } = useDrillDown({
+    chartId,
+    config: chartInfo?.drill_down_config ?? null,
+    chartConfig,
+    onDrill,
+    onDrillStep,
+  });
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border overflow-hidden h-full">
+      <div className="flex justify-between items-center px-3 py-2 bg-gray-50 border-b">
+        <span className="font-medium text-sm truncate">
+          {chartInfo?.name || `Chart #${chartId}`}
+        </span>
+        <div className="flex items-center gap-1">
+          <ChartExportButton
+            chartId={chartId}
+            chartName={chartInfo?.name || `Chart #${chartId}`}
+          />
+          {isEditing && canEdit && (
+            <Button
+              danger
+              size="small"
+              onClick={() => onRemove(String(chartId))}
+            >
+              Remove
+            </Button>
+          )}
+        </div>
+      </div>
+      <div className="p-2 h-[calc(100%-40px)]">
+        {dataWrapper?.loading ? (
+          <div className="h-full flex items-center justify-center">
+            <Spin />
+          </div>
+        ) : isKpi ? (
+          <KPIWidget
+            label={chartInfo?.name || `Chart #${chartId}`}
+            value={kpiValue ?? 0}
+            format={kpiConfig.format}
+            thresholds={kpiConfig.thresholds}
+            previous={kpiConfig.comparison?.type === "static" ? kpiConfig.comparison.value ?? null : null}
+            loading={false}
+            className="h-full"
+          />
+        ) : (
+          <EChartRenderer
+            option={chartOption as Record<string, unknown>}
+            height="100%"
+            onEvents={chartClickEvents}
+          />
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function DashboardView() {
@@ -39,6 +143,8 @@ export default function DashboardView() {
   filterValuesRef.current = filterValues;
   const [filterManagerOpen, setFilterManagerOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [drillStack, setDrillStack] = useState<DrillStep[]>([]);
+  const [drillStepIndex, setDrillStepIndex] = useState<number>(-1);
   const chartRefs = useRef<Record<string, HTMLDivElement | null>>({});
   useEffect(() => {
     const handleResize = () => setWidth(window.innerWidth);
@@ -175,6 +281,46 @@ export default function DashboardView() {
     setLayout(layout.filter((item: LayoutItem) => item.i !== chartId));
   };
 
+  const handleDrill = (chartId: number, data: ChartData) => {
+    setChartDataMap((prev: Record<number, ChartWithData>) => ({
+      ...prev,
+      [chartId]: {
+        ...prev[chartId],
+        data: data as any,
+        drillData: data,
+      },
+    }));
+  };
+
+  const handleDrillStep = (step: DrillStep) => {
+    setDrillStack((prev) => [...prev, step]);
+    setDrillStepIndex((prev) => prev + 1);
+  };
+
+  const handleNavigateUp = (index: number) => {
+    const newStack = drillStack.slice(0, index);
+    setDrillStack(newStack);
+    setDrillStepIndex(index - 1);
+    // Reload original chart data for all affected charts
+    const affectedCharts = layout.map((l: LayoutItem) => parseInt(l.i));
+    affectedCharts.forEach((cid: number) => {
+      const wrapper = chartDataMap[cid];
+      if (wrapper?.drillData) {
+        // Revert to original; reload if needed
+        loadChartData(cid);
+      }
+    });
+  };
+
+  const handleDrillReset = () => {
+    setDrillStack([]);
+    setDrillStepIndex(-1);
+    const affectedCharts = layout.map((l: LayoutItem) => parseInt(l.i));
+    affectedCharts.forEach((cid: number) => {
+      loadChartData(cid);
+    });
+  };
+
   if (loading) return <Spin className="block mx-auto mt-8" />;
   if (error) return <Alert type="error" message={error} className="m-4" />;
   if (!currentDashboard) return <Alert type="info" message="Dashboard not found" className="m-4" />;
@@ -247,88 +393,46 @@ export default function DashboardView() {
           </div>
         </div>
       ) : (
-        <div style={{ width: "100%", position: "relative", left: "50%", transform: "translateX(-50%)" }}>
-          <GridLayout
-            layout={layout}
-            width={width}
-            autoSize
-            onLayoutChange={handleLayoutChange}
-            gridConfig={{ cols: 12, rowHeight: 100, margin: [10, 10] }}
-            dragConfig={{ enabled: isEditing }}
-            resizeConfig={{ enabled: isEditing }}
-          >
-            {layout.map((item: LayoutItem) => {
-              const chartId = parseInt(item.i);
-              const chartInfo = charts.find((c: Chart) => c.id === chartId);
-              const dataWrapper = chartDataMap[chartId];
-              const chartOption = dataWrapper?.data
-                ? buildEChartsOption(dataWrapper.data.chart_type, dataWrapper.data)
-                : {};
-
-              const isKpi = chartInfo?.chart_type === "kpi";
-              const kpiValue = isKpi && dataWrapper?.data?.rows?.[0]
-                ? Object.values(dataWrapper.data.rows[0])[0] as number | string
-                : null;
-              const cfg = chartInfo?.config as Record<string, unknown> | undefined;
-              const kpiConfig = {
-                format: (cfg?.kpi_format as "number" | "currency" | "percentage") || "number",
-                thresholds: cfg?.kpi_thresholds as { warning: number; critical: number; reversed?: boolean } | undefined,
-                comparison: cfg?.kpi_comparison as { type: "previous_period" | "previous_year" | "static"; value?: number } | undefined,
-              };
-
-              const setChartRef = (el: HTMLDivElement | null) => {
-                chartRefs.current[item.i] = el;
-              };
-
-              return (
-                <div key={item.i} className="bg-white rounded-lg shadow-sm border overflow-hidden">
-                  <div className="flex justify-between items-center px-3 py-2 bg-gray-50 border-b">
-                    <span className="font-medium text-sm truncate">
-                      {chartInfo?.name || `Chart #${chartId}`}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <ChartExportButton
-                        chartId={chartId}
-                        chartName={chartInfo?.name || `Chart #${chartId}`}
-                      />
-                      {isEditing && canEdit && (
-                        <Button
-                          danger
-                          size="small"
-                          onClick={() => handleRemoveChart(item.i)}
-                        >
-                          Remove
-                        </Button>
-                      )}
-                    </div>
+        <>
+          {drillStack.length > 0 && (
+            <DrillDownBreadcrumb
+              steps={drillStack}
+              onNavigateUp={handleNavigateUp}
+              onReset={handleDrillReset}
+            />
+          )}
+          <div style={{ width: "100%", position: "relative", left: "50%", transform: "translateX(-50%)" }}>
+            <GridLayout
+              layout={layout}
+              width={width}
+              autoSize
+              onLayoutChange={handleLayoutChange}
+              gridConfig={{ cols: 12, rowHeight: 100, margin: [10, 10] }}
+              dragConfig={{ enabled: isEditing }}
+              resizeConfig={{ enabled: isEditing }}
+            >
+              {layout.map((item: LayoutItem) => {
+                const chartId = parseInt(item.i);
+                const chartInfo = charts.find((c: Chart) => c.id === chartId);
+                const dataWrapper = chartDataMap[chartId];
+                return (
+                  <div key={item.i}>
+                    <ChartDrillWrapper
+                      chartId={chartId}
+                      chartInfo={chartInfo}
+                      dataWrapper={dataWrapper}
+                      isEditing={isEditing}
+                      canEdit={canEdit}
+                      onRemove={handleRemoveChart}
+                      onDrill={handleDrill}
+                      onDrillStep={handleDrillStep}
+                    />
                   </div>
-                  <div ref={setChartRef} data-chart-id={chartId} className="p-2 h-[calc(100%-40px)]">
-                    {dataWrapper?.loading ? (
-                      <div className="h-full flex items-center justify-center">
-                        <Spin />
-                      </div>
-                    ) : isKpi ? (
-                      <KPIWidget
-                        label={chartInfo?.name || `Chart #${chartId}`}
-                        value={kpiValue ?? 0}
-                        format={kpiConfig.format}
-                        thresholds={kpiConfig.thresholds}
-                        previous={kpiConfig.comparison?.type === "static" ? kpiConfig.comparison.value ?? null : null}
-                        loading={false}
-                        className="h-full"
-                      />
-                    ) : (
-                      <EChartRenderer
-                        option={chartOption as Record<string, unknown>}
-                        height="100%"
-                      />
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </GridLayout>
-        </div>
+                );
+              })}
+            </GridLayout>
+          </div>
+        </>
       )}
 
       <Modal
