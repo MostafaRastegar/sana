@@ -1,0 +1,21 @@
+date,region,product,category,sales_amount,quantity,discount,customer_id
+2026-01-05,Tehran,Laptop Pro,Electronics,45000000,2,500000,C001
+2026-01-12,Isfahan,Wireless Mouse,Accessories,850000,10,0,C002
+2026-01-18,Shiraz,Monitor 27",Electronics,18000000,3,1000000,C003
+2026-01-25,Tehran,Keyboard Mech,Accessories,2400000,5,200000,C004
+2026-02-03,Mashhad,USB Hub,Accessories,650000,8,0,C005
+2026-02-10,Tehran,Laptop Pro,Electronics,43000000,1,0,C006
+2026-02-15,Tabriz,Webcam HD,Electronics,3200000,4,300000,C007
+2026-02-22,Isfahan,Desk Lamp,Home Office,1200000,6,100000,C008
+2026-03-01,Shiraz,Headphones,Audio,5800000,3,500000,C009
+2026-03-08,Tehran,Monitor 27",Electronics,17000000,2,2000000,C010
+2026-03-15,Mashhad,Laptop Pro,Electronics,44500000,1,0,C011
+2026-03-22,Karaj,Wireless Mouse,Accessories,900000,12,0,C012
+2026-03-29,Tehran,Standing Desk,Home Office,12000000,2,1500000,C013
+2026-04-05,Isfahan,Keyboard Mech,Accessories,2200000,4,0,C014
+2026-04-12,Tehran,Webcam HD,Electronics,3100000,3,200000,C015
+2026-04-19,Shiraz,USB Hub,Accessories,700000,15,50000,C016
+2026-04-26,Tehran,Headphones,Audio,6200000,2,800000,C017
+2026-05-03,Tabriz,Desk Lamp,Home Office,1150000,7,0,C018
+2026-05-10,Mashhad,Monitor 27",Electronics,18500000,1,0,C019
+2026-05-17,Tehran,Laptop Pro,Electronics,46000000,2,1000000,C020

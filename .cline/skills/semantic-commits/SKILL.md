@@ -5,7 +5,7 @@ description: "Git operations: semantic commits with conventional commit format, 
 
 # Semantic Commits
 
-## When to Use
+## Usage
 Use this skill for any Git commit/push workflow. Ensures consistent conventional commit format.
 
 ## Steps
