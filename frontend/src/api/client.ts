@@ -15,6 +15,15 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
+// Unwrap {success: true, data: ...} envelope from custom actions
+client.interceptors.response.use((response) => {
+  const body = response.data;
+  if (body && body.success === true && body.data !== undefined) {
+    response.data = body.data;
+  }
+  return response;
+});
+
 client.interceptors.response.use(
   (response) => response,
   async (error) => {

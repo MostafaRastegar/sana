@@ -1,14 +1,19 @@
+import logging
 from rest_framework import viewsets, status
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework import filters as drf_filters
+from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
-from rest_framework import permissions as drf_permissions
 from django.utils import timezone
 from django.conf import settings
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django_filters import rest_framework as filters
 
+from core.base_exception import DmvnException
+from core.response import success_response
+from core.permissions import ModelActionPermission
+from core.utils.pagination import CustomPagination
 from .models import DataSource, SyncLog, CSVImportJob
 from .serializers import (
     DataSourceSerializer, DataSourceListSerializer,
@@ -16,6 +21,8 @@ from .serializers import (
 )
 from .connectors import test_connection, sync_data
 from datasets.serializers import DatasetSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class DataSourceFilter(filters.FilterSet):
@@ -32,9 +39,20 @@ class DataSourceFilter(filters.FilterSet):
 class DataSourceViewSet(viewsets.ModelViewSet):
     queryset = DataSource.objects.all()
     serializer_class = DataSourceSerializer
+    permission_classes = [ModelActionPermission]
+    pagination_class = CustomPagination
     filterset_class = DataSourceFilter
+    filter_backends = [drf_filters.SearchFilter, drf_filters.OrderingFilter]
     search_fields = ["name"]
     ordering_fields = ["created_at", "name", "status", "last_synced"]
+    ordering = ["-created_at"]
+    model_permission_mapping = {
+        "test": "datasources.view_datasource",
+        "sync": "datasources.change_datasource",
+        "create_dataset": "datasources.add_dataset",
+        "import_csv": "datasources.add_datasource",
+        "import_csv_detail": "datasources.add_datasource",
+    }
 
     def perform_create(self, serializer):
         serializer.save()
@@ -50,11 +68,8 @@ class DataSourceViewSet(viewsets.ModelViewSet):
         source = self.get_object()
         success, message = test_connection(source)
         if success:
-            return Response({"success": True, "message": message})
-        return Response(
-            {"success": False, "message": message},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+            return Response(success_response(None, message))
+        raise DmvnException(message, status_code=400, code="connection_failed")
 
     @action(detail=True, methods=["post"])
     def sync(self, request, pk=None):
@@ -66,12 +81,10 @@ class DataSourceViewSet(viewsets.ModelViewSet):
         try:
             result = sync_data(source)
         except Exception as exc:
-            return Response(
-                {"status": "error", "message": str(exc)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            logger.exception(f"Sync failed for datasource {source.id}")
+            raise DmvnException(str(exc), status_code=500, code="sync_failed")
 
-        return Response(result)
+        return Response(success_response(result, "Sync completed"))
 
     @action(detail=True, methods=["get"])
     def logs(self, request, pk=None):
@@ -105,24 +118,19 @@ class DataSourceViewSet(viewsets.ModelViewSet):
                 result = sync_data(source)
                 columns = result.get("columns", [])
             except Exception as exc:
-                return Response(
-                    {"error": {"code": "sync_failed", "message": str(exc), "details": []}},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
+                raise DmvnException(str(exc), status_code=500, code="sync_failed")
 
         if not columns:
-            return Response(
-                {"error": {"code": "no_data", "message": "No data columns found. Sync the datasource first.", "details": []}},
-                status=status.HTTP_400_BAD_REQUEST,
+            raise DmvnException(
+                "No data columns found. Sync the datasource first.",
+                status_code=400,
+                code="no_data",
             )
 
         try:
             _auto_create_dataset(source, columns)
         except Exception as exc:
-            return Response(
-                {"error": {"code": "create_failed", "message": str(exc), "details": []}},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            raise DmvnException(str(exc), status_code=500, code="create_failed")
 
         # Return the created/updated dataset
         from datasets.models import Dataset
@@ -143,10 +151,7 @@ class DataSourceViewSet(viewsets.ModelViewSet):
         csv_file = request.FILES.get("file")
 
         if not csv_file:
-            return Response(
-                {"error": {"code": "missing_file", "message": "file is required", "details": []}},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            raise DmvnException("file is required", status_code=400, code="missing_file")
 
         import os
         upload_dir = os.path.join(settings.MEDIA_ROOT, "datasource_files")
@@ -175,9 +180,10 @@ class DataSourceViewSet(viewsets.ModelViewSet):
                 job.error_log = result.get("error_message", "Unknown sync error")
                 job.finished_at = timezone.now()
                 job.save(update_fields=["status", "error_log", "finished_at"])
-                return Response(
-                    {"error": {"code": "sync_failed", "message": result.get("error_message", "Sync failed"), "details": []}},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                raise DmvnException(
+                    result.get("error_message", "Sync failed"),
+                    status_code=500,
+                    code="sync_failed",
                 )
             # Update the pending job with results
             job.status = "completed"
@@ -190,10 +196,9 @@ class DataSourceViewSet(viewsets.ModelViewSet):
             job.error_log = str(e)
             job.finished_at = timezone.now()
             job.save(update_fields=["status", "error_log", "finished_at"])
-            return Response(
-                {"error": {"code": "import_error", "message": str(e), "details": []}},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            if isinstance(e, DmvnException):
+                raise
+            raise DmvnException(str(e), status_code=500, code="import_error")
 
         serializer = CSVImportJobSerializer(job)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -204,17 +209,11 @@ class DataSourceViewSet(viewsets.ModelViewSet):
         """Non-detail endpoint: POST /datasources/import-csv/ with source_id in body."""
         source_id = request.data.get("source_id")
         if not source_id:
-            return Response(
-                {"error": {"code": "missing_source_id", "message": "source_id is required", "details": []}},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            raise DmvnException("source_id is required", status_code=400, code="missing_source_id")
         try:
             source = DataSource.objects.get(id=source_id)
         except DataSource.DoesNotExist:
-            return Response(
-                {"error": {"code": "not_found", "message": "DataSource not found", "details": []}},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            raise DmvnException("DataSource not found", status_code=404, code="not_found")
         return self._handle_csv_import(source, request)
 
     @action(detail=True, methods=["post"], parser_classes=[MultiPartParser, FormParser],
@@ -237,8 +236,8 @@ class DataSourceViewSet(viewsets.ModelViewSet):
                 data = get_data(source)
             except Exception:
                 pass
-        return Response({
+        return Response(success_response({
             "columns": data.get("columns", []),
             "rows": data.get("rows", []),
             "row_count": data.get("row_count", 0),
-        })
+        }))

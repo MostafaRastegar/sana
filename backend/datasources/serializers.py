@@ -61,6 +61,8 @@ class DataSourceSerializer(serializers.ModelSerializer):
             # Try to get file from initial_data
             f = self.initial_data.get("file")
             if f:
+                if f.size > 50 * 1024 * 1024:
+                    raise serializers.ValidationError({"file": "File size must not exceed 50MB."})
                 safe_name = os.path.basename(f.name)
                 _validate_filename(safe_name)
                 upload_dir = os.path.join(settings.MEDIA_ROOT, "datasource_files")

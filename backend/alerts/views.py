@@ -10,6 +10,7 @@ from django.utils.decorators import method_decorator
 from core.permissions import ModelActionPermission
 from core.utils.pagination import CustomPagination
 from core.base_exception import DmvnException
+from core.response import success_response
 from .models import DataAlert, AlertHistory
 from .serializers import DataAlertSerializer, AlertHistorySerializer
 from .services import check_alert
@@ -66,10 +67,10 @@ class DataAlertViewSet(viewsets.ModelViewSet):
             if history:
                 serializer = AlertHistorySerializer(history)
                 return Response(
-                    {"triggered": True, "history": serializer.data}
+                    success_response({"triggered": True, "history": serializer.data})
                 )
             return Response(
-                {"triggered": False, "message": "Condition not met"}
+                success_response({"triggered": False}, message="Condition not met")
             )
         except Exception as e:
             logger.exception(f"Error checking alert {alert.id}")
@@ -87,7 +88,7 @@ class DataAlertViewSet(viewsets.ModelViewSet):
             serializer = AlertHistorySerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
         serializer = AlertHistorySerializer(histories, many=True)
-        return Response(serializer.data)
+        return Response(success_response(serializer.data))
 
     @action(detail=True, methods=["post"])
     def toggle(self, request, pk=None):
@@ -106,8 +107,8 @@ class DataAlertViewSet(viewsets.ModelViewSet):
         triggered_last_24h = AlertHistory.objects.filter(
             triggered_at__gte=timezone.now() - timezone.timedelta(hours=24)
         ).count()
-        return Response({
+        return Response(success_response({
             "total_alerts": total,
             "active_alerts": active,
             "triggered_last_24h": triggered_last_24h,
-        })
+        }))

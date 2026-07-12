@@ -1,13 +1,15 @@
 import logging
 
 from django.http import HttpResponse
-from rest_framework import viewsets, status, filters
+from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
+from core.base_exception import DmvnException
+from core.response import success_response
 from core.permissions import ModelActionPermission
 from core.utils.pagination import CustomPagination
 from .models import ScheduledReport, ReportHistory
@@ -57,10 +59,7 @@ class ScheduledReportViewSet(viewsets.ModelViewSet):
             return HttpResponse(html_content, content_type="text/html; charset=utf-8")
         except Exception as e:
             logger.exception(f"Error previewing report {report.id}")
-            return Response(
-                {"status": "error", "message": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            raise DmvnException(str(e), status_code=500, code="report_preview_failed")
 
     @action(detail=True, methods=["get"])
     def download(self, request, pk=None):
@@ -76,10 +75,7 @@ class ScheduledReportViewSet(viewsets.ModelViewSet):
             return response
         except Exception as e:
             logger.exception(f"Error downloading report {report.id}")
-            return Response(
-                {"status": "error", "message": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            raise DmvnException(str(e), status_code=500, code="report_download_failed")
 
     @action(detail=True, methods=["get"])
     def history(self, request, pk=None):
@@ -87,7 +83,7 @@ class ScheduledReportViewSet(viewsets.ModelViewSet):
         report = self.get_object()
         history_qs = report.history.all()[:50]
         serializer = ReportHistorySerializer(history_qs, many=True)
-        return Response(serializer.data)
+        return Response(success_response(serializer.data))
 
     @action(detail=True, methods=["post"])
     def trigger_now(self, request, pk=None):
@@ -95,12 +91,10 @@ class ScheduledReportViewSet(viewsets.ModelViewSet):
         report = self.get_object()
         try:
             result = generate_and_send(report)
-            return Response(result)
+            return Response(success_response(result, "Report triggered"))
         except Exception as e:
-            return Response(
-                {"status": "error", "message": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            logger.exception(f"Error triggering report {report.id}")
+            raise DmvnException(str(e), status_code=500, code="report_trigger_failed")
 
     @action(detail=True, methods=["post"])
     def toggle(self, request, pk=None):

@@ -7,6 +7,7 @@ from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from core.utils.pagination import CustomPagination
 from core.base_exception import DmvnException
+from core.response import success_response
 from charts.models import SavedQuery
 from charts.serializers import SavedQuerySerializer
 
@@ -61,13 +62,15 @@ def execute_query(request):
     col_meta = [{"name": col, "type": "string", "label": col} for col in columns]
 
     return Response(
-        {
-            "columns": col_meta,
-            "rows": rows,
-            "total": total,
-            "page": page,
-            "page_size": page_size,
-        }
+        success_response(
+            {
+                "columns": col_meta,
+                "rows": rows,
+                "total": total,
+                "page": page,
+                "page_size": page_size,
+            }
+        )
     )
 
 

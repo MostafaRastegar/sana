@@ -41,8 +41,8 @@ class ChartAPITest(TestCase):
         )
         resp = self.client.get(f"/api/charts/{chart.id}/data/")
         self.assertEqual(resp.status_code, 200)
-        self.assertIn("rows", resp.data)
-        self.assertEqual(len(resp.data["rows"]), 2)
+        self.assertIn("rows", resp.data["data"])
+        self.assertEqual(len(resp.data["data"]["rows"]), 2)
 
     def test_list_charts(self):
         Chart.objects.create(

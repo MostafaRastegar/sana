@@ -160,8 +160,8 @@ class DataAlertAPITests(TestCase):
         url = reverse("alert-stats")
         response = self.client.get(url)
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["total_alerts"] == 2
-        assert response.data["active_alerts"] == 1
+        assert response.data["data"]["total_alerts"] == 2
+        assert response.data["data"]["active_alerts"] == 1
 
     def test_filter_by_dataset(self):
         ds2 = Dataset.objects.create(

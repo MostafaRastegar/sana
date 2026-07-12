@@ -20,8 +20,8 @@ class QueryAPITest(TestCase):
     def test_execute_select(self):
         resp = self.client.post("/api/execute/", {"sql": "SELECT * FROM test_query_data"})
         self.assertEqual(resp.status_code, 200)
-        self.assertIn("rows", resp.data)
-        self.assertEqual(len(resp.data["rows"]), 2)
+        self.assertIn("rows", resp.data["data"])
+        self.assertEqual(len(resp.data["data"]["rows"]), 2)
 
     def test_execute_rejects_non_select(self):
         resp = self.client.post("/api/execute/", {"sql": "DROP TABLE test_query_data"})

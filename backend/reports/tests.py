@@ -88,7 +88,7 @@ class ScheduledReportAPITest(TestCase):
         resp = self.client.post(f"/api/reports/{report.id}/trigger_now/")
         self.assertEqual(resp.status_code, 200)
         # Should return error status because no dashboard to generate from
-        self.assertIn("status", resp.data)
+        self.assertIn("status", resp.data.get("data", {}))
 
     def test_history_action(self):
         report = ScheduledReport.objects.create(
@@ -106,7 +106,7 @@ class ScheduledReportAPITest(TestCase):
         )
         resp = self.client.get(f"/api/reports/{report.id}/history/")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.data), 1)
+        self.assertEqual(len(resp.data["data"]), 1)
 
 
 class ReportHistoryTest(TestCase):

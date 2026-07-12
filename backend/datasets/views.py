@@ -8,6 +8,7 @@ from django.utils.decorators import method_decorator
 from core.permissions import ModelActionPermission
 from core.utils.pagination import CustomPagination
 from core.base_exception import DmvnException
+from core.response import success_response
 from .models import Dataset
 from .serializers import DatasetSerializer, DatasetDataSerializer
 from datasources.models import DataSource
@@ -30,7 +31,7 @@ def list_tables(request):
                 name = row[0]
                 if not name.startswith(("auth_", "django_", "sqlite_")):
                     tables.append(name)
-        return Response({"tables": tables})
+        return Response(success_response({"tables": tables}))
     except DatabaseError as e:
         raise DmvnException(str(e), status_code=400, code="db_error")
 
@@ -64,7 +65,7 @@ def detect_columns(request, table_name):
                 }
                 for col in cursor.description
             ]
-        return Response({"columns": columns})
+        return Response(success_response({"columns": columns}))
     except DatabaseError as e:
         raise DmvnException(str(e), status_code=400, code="db_error")
 

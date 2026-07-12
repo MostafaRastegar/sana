@@ -10,6 +10,7 @@ from django.utils.decorators import method_decorator
 from core.permissions import ModelActionPermission
 from core.utils.pagination import CustomPagination
 from core.base_exception import DmvnException
+from core.response import success_response
 from .models import Chart, SavedQuery
 from .serializers import ChartSerializer, ChartDataSerializer, SavedQuerySerializer
 
@@ -225,7 +226,8 @@ class ChartViewSet(viewsets.ModelViewSet):
                 pass
 
         sql, params = self._build_chart_sql(config, table_name)
-        return Response(self._execute_chart_sql(sql, params, chart.chart_type, config))
+        chart_data = self._execute_chart_sql(sql, params, chart.chart_type, config)
+        return Response(success_response(chart_data))
 
     @action(detail=True, methods=["get"])
     def export(self, request, pk=None):
@@ -268,7 +270,7 @@ class ChartViewSet(viewsets.ModelViewSet):
                 writer.writerow(row)
             return response
 
-        return Response({"error": "Unsupported format"}, status=400)
+        raise DmvnException("Unsupported format", status_code=400, code="bad_request")
 
     @action(detail=False, methods=["post"])
     def preview(self, request):
@@ -316,9 +318,10 @@ class ChartViewSet(viewsets.ModelViewSet):
         column = request.query_params.get("column")
         value = request.query_params.get("value")
         if not column or value is None:
-            return Response(
-                {"error": "column and value query params required"},
-                status=status.HTTP_400_BAD_REQUEST,
+            raise DmvnException(
+                "column and value query params required",
+                status_code=400,
+                code="bad_request",
             )
 
         dataset = chart.dataset
@@ -329,9 +332,10 @@ class ChartViewSet(viewsets.ModelViewSet):
             try:
                 target = Chart.objects.get(id=target_chart_id)
             except Chart.DoesNotExist:
-                return Response(
-                    {"error": "Target chart not found"},
-                    status=status.HTTP_404_NOT_FOUND,
+                raise DmvnException(
+                    "Target chart not found",
+                    status_code=404,
+                    code="not_found",
                 )
             # Inherit axes from source chart if target has none
             source_config = chart.config
@@ -346,9 +350,8 @@ class ChartViewSet(viewsets.ModelViewSet):
             filters.append({"column": column, "operator": "eq", "value": value})
             config["filters"] = filters
             sql, params = self._build_chart_sql(config, target.dataset.table_name)
-            return Response(
-                self._execute_chart_sql(sql, params, target.chart_type, config)
-            )
+            drill_data = self._execute_chart_sql(sql, params, target.chart_type, config)
+            return Response(success_response(drill_data))
 
         # No target: return raw rows filtered by column=value
         with connection.cursor() as cursor:
@@ -372,4 +375,4 @@ class ChartViewSet(viewsets.ModelViewSet):
             rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
         col_meta = [{"name": col, "type": "string", "label": col} for col in columns]
-        return Response({"columns": col_meta, "rows": rows})
+        return Response(success_response({"columns": col_meta, "rows": rows}))

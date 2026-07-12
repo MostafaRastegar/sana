@@ -438,5 +438,5 @@ class RecordsViewTest(TestCase):
         _sync_csv(self.ds)
         response = self.client.get(f"/api/datasources/{self.ds.pk}/records/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["row_count"], 1)
-        self.assertEqual(response.data["columns"], ["a", "b"])
+        self.assertEqual(response.data["data"]["row_count"], 1)
+        self.assertEqual(response.data["data"]["columns"], ["a", "b"])

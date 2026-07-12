@@ -9,6 +9,7 @@ from django.utils.decorators import method_decorator
 from core.permissions import ModelActionPermission
 from core.utils.pagination import CustomPagination
 from core.base_exception import DmvnException
+from core.response import success_response
 from .models import Dashboard, DashboardPermission, DashboardTemplate
 from .serializers import (
     DashboardSerializer,
@@ -241,7 +242,9 @@ class DashboardViewSet(viewsets.ModelViewSet):
                 data=request.data, context={"request": request}
             )
             if not serializer.is_valid():
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                raise DmvnException(
+                    serializer.errors, status_code=400, code="bad_request"
+                )
             serializer.save(dashboard=dashboard)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -308,9 +311,9 @@ class UserSearchView(viewsets.GenericViewSet):
     def list(self, request):
         query = request.query_params.get("q", "")
         if len(query) < 2:
-            return Response({"results": []})
+            return Response(success_response([]))
         users = User.objects.filter(
             Q(username__icontains=query) | Q(email__icontains=query)
         ).exclude(id=request.user.id)[:20]
         serializer = self.get_serializer(users, many=True)
-        return Response(serializer.data)
+        return Response(success_response(serializer.data))

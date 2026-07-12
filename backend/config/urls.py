@@ -20,7 +20,7 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
@@ -44,6 +44,11 @@ def favicon_view(request):
     return HttpResponseRedirect(static("/favicon/favicon.ico"))
 
 
+def health_check(request):
+    """Health check endpoint for monitoring."""
+    return JsonResponse({"status": "healthy"})
+
+
 # API URL patterns (shared between prefixed and non-prefixed)
 api_patterns = [
     # JWT Authentication endpoints
@@ -59,7 +64,8 @@ api_patterns = [
 # Non-translatable URLs (API endpoints, media, etc.)
 urlpatterns = [
     path("api/", include(api_patterns)),
-    # Include example app URLs in API patterns
+    path("api/health/", health_check, name="health_check"),
+    path("api/v1/", include(api_patterns)),
     # Include BI Dashboard app URLs
     path("api/", include("datasets.urls")),
     path("api/", include("charts.urls")),
