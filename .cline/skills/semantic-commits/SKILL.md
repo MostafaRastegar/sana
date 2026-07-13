@@ -13,7 +13,6 @@ Use this skill for any Git commit/push workflow. Ensures consistent conventional
 2. Generate semantic commit message from code changes
 3. Stage modified files
 4. Commit with generated message
-5. Push to current branch
 
 ## Rules
 - Commit message must be `lower_snake_case`
