@@ -4,8 +4,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from django.db.models import Q
-from django.views.decorators.cache import cache_page
-from django.utils.decorators import method_decorator
 from core.permissions import ModelActionPermission
 from core.utils.pagination import CustomPagination
 from core.base_exception import DmvnException
@@ -22,7 +20,6 @@ from .serializers import (
 User = get_user_model()
 
 
-@method_decorator(cache_page(60 * 15), name="list")
 class DashboardViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Dashboard model.
@@ -243,7 +240,7 @@ class DashboardViewSet(viewsets.ModelViewSet):
             )
             if not serializer.is_valid():
                 raise DmvnException(
-                    serializer.errors, status_code=400, code="bad_request"
+                    "Validation error.", status_code=400, code="bad_request", details=serializer.errors
                 )
             serializer.save(dashboard=dashboard)
             return Response(serializer.data, status=status.HTTP_201_CREATED)

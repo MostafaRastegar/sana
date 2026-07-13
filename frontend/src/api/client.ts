@@ -1,4 +1,5 @@
 import axios from "axios";
+import { notification } from "antd";
 import { getCookie, setCookie, removeCookie } from "../utils/cookies";
 
 const client = axios.create({
@@ -11,6 +12,11 @@ client.interceptors.request.use((config) => {
   const token = getCookie("access_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  // Prevent browser caching on GET requests
+  if (config.method === "get") {
+    config.headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+    config.headers.Pragma = "no-cache";
   }
   return config;
 });
@@ -49,6 +55,17 @@ client.interceptors.response.use(
       } else {
         window.location.href = "/login";
       }
+    }
+
+    // Show all non-401 errors as toast notifications
+    if (error.response?.status !== 401) {
+      const msg =
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        (typeof error.response?.data === "string" ? error.response.data : null) ||
+        error.message ||
+        "An unexpected error occurred";
+      notification.error({ message: "Error", description: msg, placement: "topRight" });
     }
 
     return Promise.reject(error);

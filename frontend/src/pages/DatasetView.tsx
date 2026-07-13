@@ -37,7 +37,6 @@ export default function DatasetView() {
   };
 
   if (loading && !currentDataset) return <Spin className="block mx-auto mt-8" />;
-  if (error) return <Alert type="error" message={error} className="m-4" />;
   if (!currentDataset) return <Alert type="warning" message="Dataset not found" className="m-4" />;
 
   const dataColumns = datasetData?.columns.map((col) => ({

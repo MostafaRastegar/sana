@@ -24,13 +24,15 @@ export default function ChartExportButton({ chartId, chartName }: ChartExportBut
       const dataUrl = await toPng(el, {
         quality: 1,
         pixelRatio: 2,
+        cacheBust: true,
       });
       const link = document.createElement("a");
       link.download = `${chartName.replace(/\s+/g, "_")}.png`;
       link.href = dataUrl;
       link.click();
       message.success("PNG exported");
-    } catch {
+    } catch (err) {
+      console.error("PNG export error:", err);
       message.error("Failed to export PNG");
     } finally {
       setExporting(false);

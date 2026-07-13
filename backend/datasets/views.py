@@ -3,8 +3,6 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db import connection, DatabaseError
-from django.views.decorators.cache import cache_page
-from django.utils.decorators import method_decorator
 from core.permissions import ModelActionPermission
 from core.utils.pagination import CustomPagination
 from core.base_exception import DmvnException
@@ -69,8 +67,6 @@ def detect_columns(request, table_name):
     except DatabaseError as e:
         raise DmvnException(str(e), status_code=400, code="db_error")
 
-
-@method_decorator(cache_page(60 * 15), name="list")
 class DatasetViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Dataset model.

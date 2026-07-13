@@ -145,7 +145,6 @@ export interface Dashboard {
   filters: DashboardFilter[];
   is_public: boolean;
   chart_count: number;
-  shared_users_count: number;
   is_owner: boolean;
   user_permission: DashboardPermissionLevel | null;
   created_by: number;
@@ -158,7 +157,7 @@ export interface DashboardPermission {
   id: number;
   dashboard: number;
   user: number;
-  user_name: string;
+  username: string;
   permission: DashboardPermissionLevel;
   shared_by: number;
   created_at: string;
@@ -202,8 +201,10 @@ export interface DataSource {
   id: number;
   name: string;
   source_type: SourceType;
-  source_type_display?: string;
   connection_config: Record<string, unknown>;
+  decrypted_config?: Record<string, unknown> | null;
+  auto_sync_enabled?: boolean;
+  csv_config?: Record<string, unknown>;
   sync_schedule: string;
   is_active: boolean;
   last_synced: string | null;
@@ -273,11 +274,6 @@ export interface AlertStats {
 
 export type ReportFrequency = "daily" | "weekly" | "monthly";
 export type ReportFormat = "pdf" | "email_html";
-
-export interface ReportRecipient {
-  id: number;
-  email: string;
-}
 
 export interface ReportHistory {
   id: number;

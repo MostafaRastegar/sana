@@ -20,6 +20,7 @@ export default function ChartList() {
       onOk: async () => {
         await deleteChart(id);
         message.success("Chart deleted");
+        fetchCharts();
       },
     });
   };

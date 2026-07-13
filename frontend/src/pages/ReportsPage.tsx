@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import {
-  Table, Button, Spin, Alert as AntAlert, Space, Modal, Input, Select,
+  Table, Button, Spin, Space, Modal, Input, Select,
   Switch, InputNumber, message, Tooltip,
 } from "antd";
 import {
@@ -190,7 +190,6 @@ export default function ReportsPage() {
   };
 
   if (loading) return <Spin className="block mx-auto mt-8" />;
-  if (error) return <AntAlert type="error" message={error} className="m-4" />;
 
   const columns = [
     {

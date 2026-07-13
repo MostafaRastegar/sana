@@ -19,7 +19,6 @@ from .services import generate_and_send, generate_report
 logger = logging.getLogger(__name__)
 
 
-@method_decorator(cache_page(60 * 15), name="list")
 class ScheduledReportViewSet(viewsets.ModelViewSet):
     queryset = ScheduledReport.objects.select_related(
         "dashboard", "created_by"

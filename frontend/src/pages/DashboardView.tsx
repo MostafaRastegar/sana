@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Spin, Alert, Button, Modal, Select, message, Tag } from "antd";
+import { Spin, Button, Modal, Select, message, Tag } from "antd";
 import { EditOutlined, PlusOutlined, SaveOutlined, FilterOutlined, ShareAltOutlined } from "@ant-design/icons";
 import { useDashboardStore } from "../store/dashboardStore";
 import { useChartStore } from "../store/chartStore";
@@ -100,7 +100,7 @@ function ChartDrillWrapper({
           )}
         </div>
       </div>
-      <div className="p-2 h-[calc(100%-40px)]">
+      <div className="p-2 h-[calc(100%-40px)]" data-chart-id={chartId}>
         {dataWrapper?.loading ? (
           <div className="h-full flex items-center justify-center">
             <Spin />
@@ -146,6 +146,8 @@ export default function DashboardView() {
   const [drillStack, setDrillStack] = useState<DrillStep[]>([]);
   const [drillStepIndex, setDrillStepIndex] = useState<number>(-1);
   const chartRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const currentIdRef = useRef<string | undefined>(undefined);
+
   useEffect(() => {
     const handleResize = () => setWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
@@ -153,13 +155,25 @@ export default function DashboardView() {
   }, []);
 
   useEffect(() => {
-    if (id) {
-      fetchDashboardById(parseInt(id));
-      fetchCharts();
-    }
+    if (!id) return;
+    const dashId = parseInt(id);
+    currentIdRef.current = id;
+    // Reset store + local state before fetch to prevent stale render
+    useDashboardStore.setState({ currentDashboard: null, loading: true });
+    setChartDataMap({});
+    setLayout([]);
+    setDrillStack([]);
+    setDrillStepIndex(-1);
+    setFilterValues({});
+    fetchDashboardById(dashId);
+    fetchCharts();
   }, [id, fetchDashboardById, fetchCharts]);
 
   useEffect(() => {
+    if (!id) return;
+    const dashId = parseInt(id);
+    if (currentDashboard?.id !== dashId) return;
+    let ignore = false;
     const savedCharts = currentDashboard?.layout?.charts;
     if (savedCharts && charts.length > 0) {
       setLayout((prev) => {
@@ -180,9 +194,11 @@ export default function DashboardView() {
         }
       });
     }
-  }, [currentDashboard, charts]);
+    return () => { ignore = true; };
+  }, [currentDashboard, charts, id]);
 
   const loadChartData = async (chartId: number, globalFilters?: Record<string, unknown>[]) => {
+    const idAtCall = currentIdRef.current;
     setChartDataMap((prev: Record<number, ChartWithData>) => ({ ...prev, [chartId]: { ...prev[chartId], loading: true } }));
     try {
       const params: Record<string, unknown> = {};
@@ -190,6 +206,8 @@ export default function DashboardView() {
         params.global_filters = JSON.stringify(globalFilters);
       }
       const data = await fetchChartData(chartId, params);
+      // Discard stale response if user navigated away
+      if (currentIdRef.current !== idAtCall) return;
       const chart = charts.find((c: Chart) => c.id === chartId);
       if (chart) {
         setChartDataMap((prev: Record<number, ChartWithData>) => ({
@@ -198,6 +216,7 @@ export default function DashboardView() {
         }));
       }
     } catch {
+      if (currentIdRef.current !== idAtCall) return;
       setChartDataMap((prev: Record<number, ChartWithData>) => ({
         ...prev,
         [chartId]: { ...prev[chartId], loading: false },
@@ -322,8 +341,7 @@ export default function DashboardView() {
   };
 
   if (loading) return <Spin className="block mx-auto mt-8" />;
-  if (error) return <Alert type="error" message={error} className="m-4" />;
-  if (!currentDashboard) return <Alert type="info" message="Dashboard not found" className="m-4" />;
+  if (!currentDashboard) return <Spin className="block mx-auto mt-8" />;
 
   const canEdit = currentDashboard.user_permission === "admin" ||
     currentDashboard.user_permission === "edit" ||
@@ -332,7 +350,7 @@ export default function DashboardView() {
   const availableCharts = charts.filter((c: Chart) => !addedChartIds.includes(c.id));
 
   return (
-    <div>
+    <div key={id}>
       <div className="flex justify-between items-center mb-4">
         <div>
           <h2 className="text-2xl font-bold">{currentDashboard.name}</h2>

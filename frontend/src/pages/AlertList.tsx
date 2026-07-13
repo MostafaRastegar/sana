@@ -124,6 +124,8 @@ export default function AlertList() {
         message.success("Alert created");
       }
       setModalOpen(false);
+      fetchAlerts();
+      fetchAlertStats();
     } catch {
       message.error("Failed to save alert");
     } finally {
@@ -138,6 +140,8 @@ export default function AlertList() {
       onOk: async () => {
         await deleteAlert(id);
         message.success("Alert deleted");
+        fetchAlerts();
+        fetchAlertStats();
       },
     });
   };

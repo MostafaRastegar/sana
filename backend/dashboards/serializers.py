@@ -79,7 +79,7 @@ class DashboardPermissionSerializer(serializers.ModelSerializer):
             "shared_by",
             "created_at",
         ]
-        read_only_fields = ["id", "shared_by", "created_at"]
+        read_only_fields = ["id", "shared_by", "created_at", "dashboard"]
 
     def create(self, validated_data):
         validated_data["shared_by"] = self.context["request"].user

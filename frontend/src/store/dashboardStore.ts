@@ -2,6 +2,8 @@ import { create } from "zustand";
 import type { Dashboard } from "../types";
 import * as api from "../api/dashboards";
 
+let fetchIdCounter = 0;
+
 interface DashboardState {
   dashboards: Dashboard[];
   currentDashboard: Dashboard | null;
@@ -16,7 +18,7 @@ interface DashboardState {
   clearError: () => void;
 }
 
-export const useDashboardStore = create<DashboardState>()((set) => ({
+export const useDashboardStore = create<DashboardState>()((set, get) => ({
   dashboards: [],
   currentDashboard: null,
   loading: false,
@@ -33,11 +35,14 @@ export const useDashboardStore = create<DashboardState>()((set) => ({
   },
 
   fetchDashboardById: async (id) => {
+    const requestId = ++fetchIdCounter;
     set({ loading: true, error: null });
     try {
       const data = await api.fetchDashboardById(id);
+      if (requestId !== fetchIdCounter) return; // stale response
       set({ currentDashboard: data, loading: false });
     } catch (error) {
+      if (requestId !== fetchIdCounter) return; // stale response
       set({ error: (error as Error).message, loading: false });
     }
   },

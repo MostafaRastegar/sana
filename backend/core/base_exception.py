@@ -59,10 +59,13 @@ def custom_exception_handler(exc, context):
         )
 
     if isinstance(exc, DmvnException):
+        message = exc.message
+        if isinstance(message, str):
+            message = _(message)
         return Response(
             create_error_response(
                 status_code=exc.status_code,
-                message=_(exc.message),
+                message=message,
                 details=exc.details,
                 code=exc.code,
             ),

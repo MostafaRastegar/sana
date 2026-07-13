@@ -74,7 +74,6 @@ def execute_query(request):
     )
 
 
-@method_decorator(cache_page(60 * 15), name="list")
 class SavedQueryViewSet(viewsets.ModelViewSet):
     """
     ViewSet for SavedQuery model.

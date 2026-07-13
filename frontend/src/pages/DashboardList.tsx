@@ -49,6 +49,7 @@ export default function DashboardList() {
         }
       }
       setModalOpen(false);
+      fetchDashboards();
     } catch {
       message.error("Failed to save dashboard");
     } finally {
@@ -63,6 +64,7 @@ export default function DashboardList() {
       onOk: async () => {
         await deleteDashboard(id);
         message.success("Dashboard deleted");
+        fetchDashboards();
       },
     });
   };
@@ -117,12 +119,7 @@ export default function DashboardList() {
                   <span className="text-blue-500 text-sm">
                     {dashboard.chart_count} chart{dashboard.chart_count !== 1 ? "s" : ""}
                   </span>
-                  {dashboard.shared_users_count > 0 && (
-                    <span className="text-gray-400 text-xs flex items-center gap-1">
-                      <ShareAltOutlined /> {dashboard.shared_users_count}
-                    </span>
-                  )}
-                </div>
+                  </div>
               </Card>
             </Col>
           ))}

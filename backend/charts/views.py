@@ -4,9 +4,6 @@ from rest_framework import viewsets, status, filters as drf_filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import connection
-from django.db.models import Count, Sum, Avg, Min, Max
-from django.views.decorators.cache import cache_page
-from django.utils.decorators import method_decorator
 from core.permissions import ModelActionPermission
 from core.utils.pagination import CustomPagination
 from core.base_exception import DmvnException
@@ -25,7 +22,6 @@ def _validate_identifier(name):
         )
 
 
-@method_decorator(cache_page(60 * 15), name="list")
 class ChartViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Chart model.

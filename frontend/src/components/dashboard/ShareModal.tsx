@@ -155,7 +155,7 @@ export default function ShareModal({
                   <Tag color={permissionTagColor(perm.permission)}>
                     {perm.permission.toUpperCase()}
                   </Tag>
-                  <Text>{perm.user_name}</Text>
+                  <Text>{perm.username}</Text>
                 </div>
                 {isOwner && (
                   <Button

@@ -130,7 +130,7 @@ export default function ChartBuilder() {
         dataset: selectedDataset,
         chart_type: chartType,
         config: chartConfig,
-        drill_down_config: drillDownConfig.enabled ? drillDownConfig : null,
+        drill_down_config: drillDownConfig.enabled ? drillDownConfig : { enabled: false },
       };
       if (isEditing && id) {
         await updateChart(parseInt(id), payload);

@@ -1,6 +1,7 @@
 # Codebase Memory Rules
 
 ## Indexing
+- use codebase mcp
 - After major code changes or at session start, run `index_repository` on project path
 - Mode: `moderate` for routine work, `full` for deep analysis, `fast` for quick checks
 

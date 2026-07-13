@@ -106,6 +106,7 @@ export default function DatasetList() {
         message.success("Dataset created");
       }
       setModalOpen(false);
+      fetchDatasets();
     } catch {
       message.error("Failed to save dataset");
     } finally {
@@ -120,6 +121,7 @@ export default function DatasetList() {
       onOk: async () => {
         await deleteDataset(id);
         message.success("Dataset deleted");
+        fetchDatasets();
       },
     });
   };

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Spin, Alert as AntAlert, Descriptions, Tag, Button, Card, Table, Space, message } from "antd";
+import { Spin, Descriptions, Tag, Button, Card, Table, Space, message } from "antd";
 import { ArrowLeftOutlined, BellOutlined, CheckCircleOutlined, StopOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useAlertStore } from "../store/alertStore";
 
@@ -34,7 +34,6 @@ export default function AlertDetail() {
   };
 
   if (loading && !currentAlert) return <Spin className="block mx-auto mt-8" />;
-  if (error) return <AntAlert type="error" message={error} className="m-4" />;
   if (!currentAlert) return null;
 
   const historyColumns = [
