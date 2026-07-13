@@ -49,13 +49,16 @@ def health_check(request):
     return JsonResponse({"status": "healthy"})
 
 
-# API URL patterns (shared between prefixed and non-prefixed)
+# API URL patterns shared between prefixed and non-prefixed (JWT only)
 api_patterns = [
     # JWT Authentication endpoints
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("token/verify/", TokenVerifyView.as_view(), name="token_verify"),
-    # API Documentation
+]
+
+# API Documentation patterns (included once to avoid duplicate URL name)
+docs_patterns = [
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path("docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
@@ -65,7 +68,9 @@ api_patterns = [
 urlpatterns = [
     path("api/", include(api_patterns)),
     path("api/health/", health_check, name="health_check"),
-    path("api/v1/", include(api_patterns)),
+    # path("api/v1/", include(api_patterns)),
+    # API docs included once under /api/ to avoid duplicate URL name registration
+    path("api/", include(docs_patterns)),
     # Include BI Dashboard app URLs
     path("api/", include("datasets.urls")),
     path("api/", include("charts.urls")),

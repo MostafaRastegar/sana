@@ -275,10 +275,6 @@ SPECTACULAR_SETTINGS = {
         },
         "security": [{"Bearer": []}],
         "oauth2RedirectUrl": None,
-        "urls.primaryName": "v1",
-        "urls": [
-            {"name": "v1", "url": "/api/v1/schema/"},
-        ],
         "deepLinking": True,
         "persistAuthorization": True,
         "docExpansion": "none",
