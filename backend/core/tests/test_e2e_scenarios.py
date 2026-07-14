@@ -224,11 +224,11 @@ class E2EScenarioTests(TestCase):
         })
         response = self.client.get(f"/api/charts/{chart.id}/data/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("columns", response.data)
-        self.assertIn("rows", response.data)
-        self.assertIn("chart_type", response.data)
-        self.assertIn("config", response.data)
-        print(f"  ✓ S14: Get chart data ({len(response.data['rows'])} rows)")
+        self.assertIn("columns", response.data["data"])
+        self.assertIn("rows", response.data["data"])
+        self.assertIn("chart_type", response.data["data"])
+        self.assertIn("config", response.data["data"])
+        print(f"  ✓ S14: Get chart data ({len(response.data['data']['rows'])} rows)")
 
     # ─────────────────────────────────────────────
     # Dashboard CRUD + Layout + Render
@@ -323,10 +323,10 @@ class E2EScenarioTests(TestCase):
             "sql": "SELECT name, price FROM demo_products ORDER BY price DESC LIMIT 3",
         }, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("columns", response.data)
-        self.assertIn("rows", response.data)
-        self.assertLessEqual(len(response.data["rows"]), 3)
-        print(f"  ✓ S22: Execute SELECT query ({len(response.data['rows'])} rows)")
+        self.assertIn("columns", response.data["data"])
+        self.assertIn("rows", response.data["data"])
+        self.assertLessEqual(len(response.data["data"]["rows"]), 3)
+        print(f"  ✓ S22: Execute SELECT query ({len(response.data['data']['rows'])} rows)")
 
     def test_s23_execute_rejects_non_select(self):
         """S23: POST /api/execute/ rejects non-SELECT queries."""

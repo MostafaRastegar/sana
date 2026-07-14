@@ -14,6 +14,8 @@ from .models import DataSource, SyncLog, CSVImportJob
 
 logger = logging.getLogger(__name__)
 
+__test__ = False  # prevent pytest discovering test_connection() as a test function
+
 
 def test_connection(source: DataSource) -> tuple[bool, str]:
     """Validate data source connectivity. Returns (success, message)."""

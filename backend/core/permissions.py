@@ -63,10 +63,8 @@ class ModelActionPermission(BasePermission):
         model_name = model_cls._meta.model_name
 
         # Check if custom permission mapping exists for this action
-        if (
-            hasattr(view, "model_permission_mapping")
-            and action in view.model_permission_mapping
-        ):
+        mapping = getattr(view, "model_permission_mapping", None)
+        if mapping is not None and action in mapping:
             return view.model_permission_mapping[action]
 
         # Use standard action mapping
