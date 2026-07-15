@@ -15,7 +15,7 @@ Use this skill when optimizing database queries, adding caching, or handling lar
 
 1. **Query Optimization** — Apply `select_related('fk1', 'fk2')` for every ForeignKey/O2O and `prefetch_related('m2m', 'reverse_fk_set')` for every ManyToMany/reverse FK accessed in serializers. Apply at class level in `queryset`, extend in `get_queryset()`. Never iterate a queryset without `select_related` for relationship access.
 
-2. **Pagination** — Use `CustomPagination` on all list endpoints. For very large datasets use `CursorPagination` (no count query, stable ordering). Default page size: 20, max: 100.
+2. **Pagination** — Use `CustomPagination` on all list endpoints. For very large datasets use `CursorPagination` (no count query, stable ordering). Default page size: 10, max: 100. Append `?page_size=N` to adjust per-request.
 
 3. **Caching (Redis)** — Cache computed stats, aggregations, and reference data with `cache.get/set` and TTL. Never cache user-specific data, active records, or auth tokens. Use `@method_decorator(cache_page(60*15))` for infrequently-changing list endpoints.
 

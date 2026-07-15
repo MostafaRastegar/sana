@@ -17,7 +17,7 @@ Use this skill when building or extending CRUD endpoints for any Django model vi
 
 2. **Serializer Mapping** — Separate read/write serializers, use `get_serializer_class()` for conditional mapping, override `perform_create/update` for side effects.
 
-3. **Custom Actions** — Use `@action(detail=True, methods=['post'])` for non-CRUD endpoints (e.g. archive, restore). Return explicit status codes.
+3. **Custom Actions** — Use `@action(detail=True, methods=['post'])` for non-CRUD endpoints (e.g. archive, restore). Return explicit status codes. Set `throttle_classes` per action when rate differs from the view default.
 
 4. **Bulk Operations** — Class-based views or decorators for bulk create/update/delete. Always validate all items before any mutation.
 
